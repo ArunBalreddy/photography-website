@@ -16,7 +16,7 @@ export default function Services() {
             >
               <div className="relative aspect-[4/3] overflow-hidden">
                 <Image
-                  src={`${s.image}?w=900&q=75`}
+                  src={s.image.startsWith("/") ? s.image : `${s.image}?w=900&q=75`}
                   alt=""
                   fill
                   sizes="(min-width: 768px) 33vw, 100vw"

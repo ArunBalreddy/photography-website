@@ -33,36 +33,38 @@ export const heroSlides = [
   { src: unsplash("1477959858617-67f85cf4f1df"), alt: "City skyline at blue hour" },
 ];
 
-export type Category = "Weddings" | "Portraits" | "Landscapes" | "Urban";
-export const categories: Category[] = ["Weddings", "Portraits", "Landscapes", "Urban"];
+export type Category = "Weddings" | "Couples" | "Maternity" | "Kids" | "Portraits";
+export const categories: Category[] = ["Weddings", "Couples", "Maternity", "Kids", "Portraits"];
 
-export type Photo = {
-  src: string;
-  alt: string;
+export type Work = {
+  /** Instagram shortcode — the image lives at /instagram/<id>.jpg. */
+  id: string;
+  kind: "photo" | "reel";
   category: Category;
   title: string;
-  /** Tall photos span two rows in the masonry grid. */
-  tall?: boolean;
+  alt: string;
+  width: number;
+  height: number;
 };
 
-export const photos: Photo[] = [
-  { src: unsplash("1511285560929-80b456fea0bc"), alt: "Couple holding hands", category: "Weddings", title: "Vows in Udaipur", tall: true },
-  { src: unsplash("1494790108377-be9c29b29330"), alt: "Smiling woman portrait", category: "Portraits", title: "Meera" },
-  { src: unsplash("1501785888041-af3ef285b470"), alt: "Lake reflecting mountains", category: "Landscapes", title: "Still Water" },
-  { src: unsplash("1449824913935-59a10b8d2000"), alt: "City street from above", category: "Urban", title: "Grid Lines", tall: true },
-  { src: unsplash("1465495976277-4387d4b0b4c6"), alt: "Wedding ceremony details", category: "Weddings", title: "The Quiet Before" },
-  { src: unsplash("1507003211169-0a1dd7228f2d"), alt: "Man in natural light portrait", category: "Portraits", title: "Kabir", tall: true },
-  { src: unsplash("1470071459604-3b5ec3a7fe05"), alt: "Misty green hills", category: "Landscapes", title: "Monsoon Hills" },
-  { src: unsplash("1480714378408-67cf0d13bc1b"), alt: "Skyscrapers at night", category: "Urban", title: "After Hours" },
-  { src: unsplash("1524504388940-b1c1722653e1"), alt: "Editorial portrait", category: "Portraits", title: "Editorial No. 7" },
-  { src: unsplash("1519681393784-d120267933ba"), alt: "Starry sky over snowy peaks", category: "Landscapes", title: "Night Watch", tall: true },
-  { src: unsplash("1438761681033-6461ffad8d80"), alt: "Portrait of a woman outdoors", category: "Portraits", title: "Ananya" },
-  { src: unsplash("1507525428034-b723cf961d3e"), alt: "Turquoise beach shoreline", category: "Landscapes", title: "Tidewater" },
-  { src: unsplash("1517841905240-472988babdf9"), alt: "Fashion portrait", category: "Portraits", title: "Studio Light", tall: true },
-  { src: unsplash("1469474968028-56623f02e42e"), alt: "Sun rays over mountains", category: "Landscapes", title: "First Light" },
-  { src: unsplash("1531746020798-e6953c6e8e04"), alt: "Portrait with dramatic shadows", category: "Portraits", title: "Contrast" },
-  { src: unsplash("1472214103451-9374bd1c798e"), alt: "Meadow at sunset", category: "Landscapes", title: "Long Grass" },
+// Latest posts from @__picturesque__1. Reels play through Instagram's official embed.
+export const works: Work[] = [
+  { id: "Dbs2DimycCx", kind: "reel", category: "Maternity", title: "Seemantham", alt: "Couple at a traditional seemantham ceremony", width: 360, height: 640 },
+  { id: "DaBJZbAD19O", kind: "photo", category: "Weddings", title: "Groom Visuals", alt: "Groom in a turban beside his bride", width: 480, height: 640 },
+  { id: "Db7-S_-SNOS", kind: "reel", category: "Kids", title: "Little Ones", alt: "Smiling baby girl in a traditional dress", width: 360, height: 640 },
+  { id: "DNguFppzyvo", kind: "photo", category: "Couples", title: "Mallikarjun & Shivani", alt: "Black and white silhouette of a couple", width: 480, height: 640 },
+  { id: "DGMh6oESx1b", kind: "photo", category: "Weddings", title: "Haldi", alt: "Bride laughing during the haldi ceremony", width: 512, height: 640 },
+  { id: "DWO6lVvDxFs", kind: "reel", category: "Weddings", title: "Sita Kalyanam", alt: "Wedding invitation among green leaves", width: 360, height: 640 },
+  { id: "DTVbWRyD1Mb", kind: "photo", category: "Portraits", title: "Rithika — Classical Collection", alt: "Classical dance portraits of a young girl", width: 640, height: 640 },
+  { id: "DbOoxyzEjJ2", kind: "photo", category: "Couples", title: "Abhilash & Pratyusha", alt: "Couple sitting together outdoors", width: 512, height: 640 },
+  { id: "Dcgy58XDwaj", kind: "photo", category: "Kids", title: "Happy Birthday Rithanshi", alt: "Mother holding her baby at a birthday celebration", width: 480, height: 640 },
+  { id: "DYIzefyPyyY", kind: "reel", category: "Weddings", title: "Wedding Film", alt: "Bride and groom during wedding rituals", width: 360, height: 640 },
+  { id: "DTEYtFtkr9e", kind: "photo", category: "Kids", title: "Drithivamika", alt: "Little girl in traditional attire", width: 512, height: 640 },
+  { id: "Dc1ODw8PwVF", kind: "reel", category: "Weddings", title: "Behind the Lens", alt: "Camera held up above wedding garlands", width: 361, height: 640 },
 ];
+
+export const workImage = (w: Work) => `/instagram/${w.id}.jpg`;
+export const workUrl = (w: Work) => `https://www.instagram.com/${w.kind === "reel" ? "reel" : "p"}/${w.id}/`;
 
 export const about = {
   image: unsplash("1452587925148-ce544e77e70d"),
@@ -80,26 +82,26 @@ export const about = {
 
 export const services = [
   {
-    name: "Portrait Session",
+    name: "Portraits & Kids",
     price: "₹15,000",
     unit: "per session",
-    image: unsplash("1529156069898-49953e39b3ac"),
-    features: ["2 hours, one location", "40+ edited images", "Online gallery", "Print release"],
+    image: "/instagram/DTVbWRyD1Mb.jpg",
+    features: ["Birthdays & classical portraits", "2 hours, one location", "40+ edited images", "Online gallery"],
   },
   {
     name: "Wedding Story",
     price: "₹1,50,000",
     unit: "starting from",
-    image: unsplash("1519741497674-611481863552"),
+    image: "/instagram/DaBJZbAD19O.jpg",
     features: ["Full-day coverage", "Two photographers", "600+ edited images", "Heirloom album"],
     featured: true,
   },
   {
-    name: "Commercial & Travel",
-    price: "₹40,000",
-    unit: "per day",
-    image: unsplash("1477959858617-67f85cf4f1df"),
-    features: ["Brand & editorial shoots", "Location scouting", "Commercial licence", "48-hour previews"],
+    name: "Maternity & Seemantham",
+    price: "₹25,000",
+    unit: "per session",
+    image: "/instagram/Dbs2DimycCx.jpg",
+    features: ["Home or outdoor shoot", "Ceremony coverage", "50+ edited images", "Short highlight reel"],
   },
 ];
 
@@ -107,7 +109,7 @@ export const testimonials = [
   {
     quote: "We've looked at our wedding album a hundred times and still find new details. It feels exactly like the day did.",
     name: "Priya & Rohan",
-    role: "Wedding, Jaipur",
+    role: "Wedding, Hyderabad",
   },
   {
     quote: "I usually hate being photographed. Nikhil made it feel like a conversation — the portraits are the most 'me' I've ever looked.",
@@ -115,8 +117,8 @@ export const testimonials = [
     role: "Portrait session",
   },
   {
-    quote: "Delivered a full travel campaign ahead of schedule. Every frame was usable, and the light was unreal.",
-    name: "Wanderlane Travel",
-    role: "Commercial client",
+    quote: "Our seemantham photos are so warm and natural. Nikhil caught every little moment with our families.",
+    name: "Sowmya & Karthik",
+    role: "Maternity, Hyderabad",
   },
 ];

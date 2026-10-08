@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { photos, site } from "@/content/site";
+import { site, workImage, works } from "@/content/site";
 
 async function currentYear() {
   "use cache";
@@ -10,10 +10,10 @@ export default async function Footer() {
   return (
     <footer className="border-t border-line">
       <a href={site.instagram} target="_blank" rel="noreferrer" className="group grid grid-cols-3 md:grid-cols-6">
-        {photos.slice(0, 6).map((p) => (
-          <div key={p.src} className="relative aspect-square overflow-hidden">
+        {works.slice(0, 6).map((w) => (
+          <div key={w.id} className="relative aspect-square overflow-hidden">
             <Image
-              src={`${p.src}?w=400&q=70`}
+              src={workImage(w)}
               alt=""
               fill
               sizes="(min-width: 768px) 17vw, 33vw"

@@ -28,7 +28,7 @@ export default function Navbar() {
           </span>
         </a>
 
-        <nav className="hidden gap-10 md:flex">
+        <nav className="hidden gap-10 lg:flex">
           {nav.map((item) => (
             <a
               key={item.href}
@@ -42,13 +42,13 @@ export default function Navbar() {
 
         <a
           href="#contact"
-          className="hidden border border-foreground/40 px-5 py-2.5 text-xs uppercase tracking-[0.25em] transition-colors hover:border-accent hover:bg-accent hover:text-background md:inline-block"
+          className="hidden border border-foreground/40 px-5 py-2.5 text-xs uppercase tracking-[0.25em] transition-colors hover:border-accent hover:bg-accent hover:text-background lg:inline-block"
         >
           Book a shoot
         </a>
 
         <button
-          className="flex h-10 w-10 flex-col items-center justify-center gap-1.5 md:hidden"
+          className="flex h-10 w-10 flex-col items-center justify-center gap-1.5 lg:hidden"
           aria-label={open ? "Close menu" : "Open menu"}
           aria-expanded={open}
           onClick={() => setOpen((o) => !o)}
@@ -59,7 +59,7 @@ export default function Navbar() {
       </div>
 
       {open && (
-        <nav className="flex flex-col gap-6 border-t border-line px-6 py-8 md:hidden">
+        <nav className="flex flex-col gap-6 border-t border-line px-6 py-8 lg:hidden">
           {nav.map((item) => (
             <a
               key={item.href}
