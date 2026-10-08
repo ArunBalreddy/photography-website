@@ -10,9 +10,9 @@ export const site = {
   location: "Hyderabad, India · Available worldwide",
   email: "hello@lumenstudio.example",
   phone: "+91 81438 24214",
-  instagram: "https://instagram.com",
+  instagram: "https://www.instagram.com/__picturesque__1/",
   social: [
-    { label: "Instagram", href: "https://instagram.com" },
+    { label: "Instagram", href: "https://www.instagram.com/__picturesque__1/" },
     { label: "Pinterest", href: "https://pinterest.com" },
     { label: "Behance", href: "https://behance.net" },
   ],
