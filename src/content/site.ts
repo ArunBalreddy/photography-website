@@ -3,12 +3,12 @@
 const unsplash = (id: string) => `https://images.unsplash.com/photo-${id}`;
 
 export const site = {
-  name: "Lumen Studio",
+  name: "Nikhil Sonu",
   tagline: "Photography that remembers how it felt.",
-  photographer: "Aarav Mehta",
+  photographer: "Nikhil Sonu",
   location: "Hyderabad, India · Available worldwide",
   email: "hello@lumenstudio.example",
-  phone: "+91 90000 00000",
+  phone: "+91 81438 24214",
   instagram: "https://instagram.com",
   social: [
     { label: "Instagram", href: "https://instagram.com" },
@@ -109,7 +109,7 @@ export const testimonials = [
     role: "Wedding, Jaipur",
   },
   {
-    quote: "I usually hate being photographed. Aarav made it feel like a conversation — the portraits are the most 'me' I've ever looked.",
+    quote: "I usually hate being photographed. Nikhil made it feel like a conversation — the portraits are the most 'me' I've ever looked.",
     name: "Neha Sharma",
     role: "Portrait session",
   },

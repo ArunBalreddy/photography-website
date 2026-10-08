@@ -44,7 +44,9 @@ export default function Contact() {
             </div>
             <div>
               <dt className="text-xs uppercase tracking-[0.25em] text-accent">Phone</dt>
-              <dd className="mt-1">{site.phone}</dd>
+              <dd className="mt-1">
+                <a href={`tel:${site.phone.replace(/\s/g, "")}`} className="hover:text-accent">{site.phone}</a>
+              </dd>
             </div>
             <div>
               <dt className="text-xs uppercase tracking-[0.25em] text-accent">Studio</dt>
