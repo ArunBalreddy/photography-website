@@ -21,8 +21,11 @@ export default function Navbar() {
       }`}
     >
       <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-6">
-        <a href="#top" className="font-serif text-2xl tracking-wide">
-          {site.name}
+        <a href="#top" aria-label={site.fullName}>
+          <span className="flex flex-col leading-none">
+            <span className="font-serif text-2xl tracking-[0.2em]">{site.name}</span>
+            <span className="mt-1 font-serif text-sm italic text-accent">by {site.photographer}</span>
+          </span>
         </a>
 
         <nav className="hidden gap-10 md:flex">

@@ -12,10 +12,10 @@ const cormorant = Cormorant_Garamond({
 });
 
 export const metadata: Metadata = {
-  title: `${site.name} Photography — Weddings, Portraits & Travel`,
+  title: `${site.fullName} — Wedding, Portrait & Travel Photography`,
   description: site.tagline,
   openGraph: {
-    title: site.name,
+    title: site.fullName,
     description: site.tagline,
     images: ["https://images.unsplash.com/photo-1519741497674-611481863552?w=1200&q=80"],
   },

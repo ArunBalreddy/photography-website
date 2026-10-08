@@ -23,7 +23,10 @@ export default async function Footer() {
         ))}
       </a>
       <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-6 px-6 py-10 text-sm text-muted md:flex-row">
-        <p className="font-serif text-2xl text-foreground">{site.name}</p>
+        <p className="text-foreground">
+          <span className="font-serif text-2xl tracking-[0.2em]">{site.name}</span>{" "}
+          <span className="font-serif italic text-accent">by {site.photographer}</span>
+        </p>
         <nav className="flex gap-8">
           {site.social.map((s) => (
             <a key={s.label} href={s.href} target="_blank" rel="noreferrer" className="hover:text-accent">
@@ -31,7 +34,7 @@ export default async function Footer() {
             </a>
           ))}
         </nav>
-        <p>© {await currentYear()} {site.name}. All rights reserved.</p>
+        <p>© {await currentYear()} {site.fullName}. All rights reserved.</p>
       </div>
     </footer>
   );

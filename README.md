@@ -1,4 +1,4 @@
-# Nikhil Sonu — Photography Website
+# PICTURESQUE by Nikhil Sonu — Photography Website
 
 A dark, editorial photography portfolio built with Next.js 16, React 19 and Tailwind CSS v4.
 
