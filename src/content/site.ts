@@ -26,11 +26,13 @@ export const nav = [
   { label: "Contact", href: "#contact" },
 ];
 
-export const heroSlides = [
-  { src: unsplash("1519741497674-611481863552"), alt: "Bride and groom at golden hour" },
-  { src: unsplash("1506744038136-46273834b3fb"), alt: "Valley with mountains and a river at dusk" },
-  { src: unsplash("1534528741775-53994a69daeb"), alt: "Close portrait of a woman in soft light" },
-  { src: unsplash("1477959858617-67f85cf4f1df"), alt: "City skyline at blue hour" },
+export type HeroSlide = { src: string; alt: string; width: number; height: number };
+
+export const heroSlides: HeroSlide[] = [
+  { src: "/instagram/Dbs2DimycCx.jpg", alt: "Couple at a traditional seemantham ceremony", width: 360, height: 640 },
+  { src: "/instagram/Db7-S_-SNOS.jpg", alt: "Smiling baby girl in a traditional dress", width: 360, height: 640 },
+  { src: "/instagram/DGMh6oESx1b.jpg", alt: "Bride laughing during her haldi ceremony", width: 512, height: 640 },
+  { src: "/instagram/DaBJZbAD19O.jpg", alt: "Groom in a turban beside his bride", width: 480, height: 640 },
 ];
 
 export type Category = "Weddings" | "Couples" | "Maternity" | "Kids" | "Portraits";
