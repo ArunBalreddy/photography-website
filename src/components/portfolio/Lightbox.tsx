@@ -120,7 +120,7 @@ function ZoomablePhoto({ work, onZoomChange }: { work: Work; onZoomChange: (zoom
           sizes="100vw"
           draggable={false}
           className="object-contain"
-          {...blurProps(work.src)}
+          {...blurProps(work.src, work.blur)}
         />
       </div>
     </div>
@@ -291,7 +291,7 @@ export default function Lightbox({
                 i === index ? "opacity-100 outline outline-1 outline-offset-2 outline-accent" : "opacity-45 hover:opacity-80"
               }`}
             >
-              <Image src={w.src} alt="" fill sizes="48px" className="object-cover" {...blurProps(w.src)} />
+              <Image src={w.src} alt="" fill sizes="48px" className="object-cover" {...blurProps(w.src, w.blur)} />
             </button>
           ))}
         </div>

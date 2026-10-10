@@ -51,7 +51,7 @@ export default function Folder({
               fill
               sizes="(min-width: 1024px) 26vw, (min-width: 640px) 40vw, 80vw"
               className="object-cover"
-              {...blurProps(w.src)}
+              {...blurProps(w.src, w.blur)}
             />
           </div>
         ))}

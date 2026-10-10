@@ -22,3 +22,19 @@ The contact form opens the visitor's email app pre-filled to `site.email` (no ba
 npm install
 npm run dev
 ```
+
+## Gallery admin (`/admin`)
+
+Sign in at `/admin/login` to manage the gallery: create, rename, reorder and delete folders; upload photos and videos
+(photos are resized and stripped of location data in the browser; videos up to 100 MB); rename, move, reorder and
+delete items; change the admin password. Changes save automatically and the public gallery updates right away.
+
+Environment variables (Vercel → Settings → Environment Variables):
+
+| Variable | What it is |
+| --- | --- |
+| `ADMIN_USERNAME` / `ADMIN_PASSWORD` | First sign-in. After the password is changed in the admin, the stored (hashed) password takes over. |
+| `CLOUDINARY_URL` | `cloudinary://<api_key>:<api_secret>@<cloud_name>` from the Cloudinary dashboard. Stores uploads, the gallery list and the password hash. Without it the live admin is read-only and the site shows the built-in photos. |
+
+Locally (`npm run dev`) without `CLOUDINARY_URL`, the admin saves to `.data/` and uploads to `public/uploads/` so it can
+be tried end to end.

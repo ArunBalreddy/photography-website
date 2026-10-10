@@ -13,7 +13,7 @@ export default function FloatingContact() {
   return (
     <div className="fixed bottom-8 right-8 z-40 hidden flex-col items-end gap-3 md:flex">
       {site.email && (
-        <a href={emailLink("Photoshoot enquiry")} aria-label="Email us" className="group flex items-center gap-3">
+        <a href={emailLink("Photoshoot enquiry")} target="_blank" rel="noreferrer" aria-label="Email us" className="group flex items-center gap-3">
           <span className={label}>Email us</span>
           <span className={`${bubble} bg-accent`}>
             <MailIcon className="h-6 w-6 text-background" />

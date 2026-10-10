@@ -55,7 +55,7 @@ export default function MobileBar() {
           <InstagramIcon className="h-5 w-5" />
         </a>
         {site.email && (
-          <a href={emailLink("Photoshoot enquiry")} aria-label="Email us" tabIndex={shown ? 0 : -1} className={`${icon} text-accent`}>
+          <a href={emailLink("Photoshoot enquiry")} target="_blank" rel="noreferrer" aria-label="Email us" tabIndex={shown ? 0 : -1} className={`${icon} text-accent`}>
             <MailIcon className="h-5 w-5" />
           </a>
         )}

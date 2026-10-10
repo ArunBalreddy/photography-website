@@ -25,9 +25,19 @@ export const site = {
 /** Click-to-chat link that opens WhatsApp with `text` pre-filled to the studio's number. */
 export const whatsappLink = (text: string) => `https://wa.me/${site.whatsapp}?text=${encodeURIComponent(text)}`;
 
-/** mailto: link that opens the visitor's mail app with subject and body pre-filled. */
+const enc = encodeURIComponent;
+
+/** Opens Gmail in the browser with the message pre-filled (we don't rely on a desktop mail app). */
 export const emailLink = (subject: string, body = "") =>
-  `mailto:${site.email}?subject=${encodeURIComponent(subject)}${body ? `&body=${encodeURIComponent(body)}` : ""}`;
+  `https://mail.google.com/mail/?view=cm&fs=1&to=${enc(site.email)}&su=${enc(subject)}${body ? `&body=${enc(body)}` : ""}`;
+
+/** Webmail choices (and the device's own mail app) offered after an email booking. */
+export const emailOptions = (subject: string, body = "") => [
+  { label: "Gmail", href: emailLink(subject, body) },
+  { label: "Outlook", href: `https://outlook.live.com/mail/0/deeplink/compose?to=${enc(site.email)}&subject=${enc(subject)}&body=${enc(body)}` },
+  { label: "Yahoo Mail", href: `https://compose.mail.yahoo.com/?to=${enc(site.email)}&subject=${enc(subject)}&body=${enc(body)}` },
+  { label: "Other mail app", href: `mailto:${site.email}?subject=${enc(subject)}&body=${enc(body)}` },
+];
 
 export const shootTypes = [
   "Wedding",
@@ -78,7 +88,10 @@ export type Work = {
   id: string;
   /** photo: /photos · video: self-hosted film in /films · reel: Instagram reel (official embed). */
   kind: "photo" | "video" | "reel";
-  category: Category;
+  /** Folder name shown on the site (folders are editable in /admin). */
+  category: string;
+  /** Folder id, when the item comes from the admin-managed gallery. */
+  folder?: string;
   title: string;
   alt: string;
   /** The image, or the cover frame for videos and reels. */
@@ -86,6 +99,10 @@ export type Work = {
   width: number;
   height: number;
   video?: string;
+  /** Tiny blurred preview (data URL) for uploads; built-in photos use src/content/blur.ts. */
+  blur?: string;
+  /** Cloudinary asset id, for uploads managed from /admin. */
+  publicId?: string;
 };
 
 const photo = (slug: string, category: Category, title: string, alt: string, width: number, height: number): Work => ({

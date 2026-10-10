@@ -27,9 +27,11 @@ lines = [
     *[f'  {json.dumps(k)}: "{v}",' for k, v in entries.items()],
     "};",
     "",
-    "/** next/image props for a blur-up placeholder, when we have one for this src. */",
-    "export const blurProps = (src: string) =>",
-    '  blur[src] ? ({ placeholder: "blur", blurDataURL: blur[src] } as const) : ({} as const);',
+    "/** next/image props for a blur-up placeholder: the item's own (uploads) or a generated one (built-ins). */",
+    "export const blurProps = (src: string, own?: string) => {",
+    "  const data = own ?? blur[src];",
+    '  return data ? ({ placeholder: "blur", blurDataURL: data } as const) : ({} as const);',
+    "};",
     "",
 ]
 with open("src/content/blur.ts", "w") as f:

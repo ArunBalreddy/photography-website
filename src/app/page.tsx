@@ -10,15 +10,17 @@ import Testimonials from "@/components/Testimonials";
 import Contact from "@/components/Contact";
 import Footer from "@/components/Footer";
 import FloatingContact from "@/components/FloatingContact";
+import { getGallery } from "@/lib/gallery";
 
-export default function Home() {
+export default async function Home() {
+  const gallery = await getGallery();
   return (
     <>
       <Intro />
       <Navbar />
       <main>
         <Hero />
-        <Gallery />
+        <Gallery folders={gallery.folders} works={gallery.works} />
         <About />
         <Services />
         <Testimonials />

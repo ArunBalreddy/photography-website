@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, type FormEvent } from "react";
-import { emailLink, shootTypes, site, whatsappLink } from "@/content/site";
+import { emailLink, emailOptions, shootTypes, site, whatsappLink } from "@/content/site";
 import { formatShootDate, type Booking } from "@/lib/booking";
 import SectionHeading from "./SectionHeading";
 import Reveal from "./Reveal";
@@ -14,6 +14,7 @@ const field =
   "w-full border-b border-line bg-transparent py-3 text-foreground placeholder:text-muted/60 focus:border-accent focus:outline-none";
 
 const firstName = site.photographer.split(" ")[0];
+const emailSubject = (shoot: string) => `Photoshoot booking — ${shoot}`;
 const bookBtn =
   "inline-flex w-full items-center justify-center gap-3 whitespace-nowrap border px-4 py-5 text-sm font-medium uppercase tracking-[0.2em] transition-colors md:py-4 md:text-xs";
 const bookIcon = "h-5 w-5 md:h-4 md:w-4";
@@ -32,7 +33,7 @@ type Via = "whatsapp" | "instagram" | "email";
 export default function Contact() {
   const sectionRef = useRef<HTMLElement>(null);
   const [shoot, setShoot] = useState("");
-  const [sent, setSent] = useState<{ via: Via; link: string; text: string } | null>(null);
+  const [sent, setSent] = useState<{ via: Via; link: string; text: string; subject: string } | null>(null);
   const [alerted, setAlerted] = useState(false);
   const [copied, setCopied] = useState(false);
 
@@ -99,15 +100,14 @@ export default function Contact() {
       via === "whatsapp"
         ? whatsappLink(text)
         : via === "email"
-          ? emailLink(`Photoshoot booking — ${booking.shoot}`, text)
+          ? emailLink(emailSubject(booking.shoot), text)
           : site.instagramDM;
     if (via === "instagram") {
       setCopied(false);
       navigator.clipboard?.writeText(text).then(() => setCopied(true), () => {});
     }
-    setSent({ via, link, text });
-    // mailto: hands off to the mail app; opening it in a new tab would leave a blank tab behind.
-    if (via === "email" || !window.open(link, "_blank", "noopener")) window.location.href = link;
+    setSent({ via, link, text, subject: emailSubject(booking.shoot) });
+    if (!window.open(link, "_blank", "noopener")) window.location.href = link;
   }
 
   function copyAgain() {
@@ -151,6 +151,8 @@ export default function Contact() {
             {site.email && (
               <a
                 href={emailLink("Photoshoot enquiry")}
+                target="_blank"
+                rel="noreferrer"
                 className="inline-flex items-center gap-3 border border-accent/60 px-6 py-3 text-xs uppercase tracking-[0.25em] text-accent transition-colors hover:bg-accent hover:text-background"
               >
                 <MailIcon className="h-4 w-4" />
@@ -179,7 +181,7 @@ export default function Contact() {
               <div>
                 <dt className="text-xs uppercase tracking-[0.25em] text-accent">Email</dt>
                 <dd className="mt-1">
-                  <a href={emailLink("Photoshoot enquiry")} className="hover:text-accent">
+                  <a href={emailLink("Photoshoot enquiry")} target="_blank" rel="noreferrer" className="hover:text-accent">
                     {site.email}
                   </a>
                 </dd>
@@ -215,11 +217,29 @@ export default function Contact() {
                 {alerted ? "there to chat with him directly." : "to confirm your request."}
               </p>
             ) : sent.via === "email" ? (
-              <p className="mt-4 text-muted">
-                Your booking email is ready in your mail app — tap <strong className="text-foreground">Send</strong>{" "}
-                {alerted ? "to email him directly." : "to confirm your request."} You can also write to{" "}
-                <span className="text-foreground">{site.email}</span>.
-              </p>
+              <>
+                <p className="mt-4 text-muted">
+                  Your booking email is ready in Gmail (opened in a new tab) — tap{" "}
+                  <strong className="text-foreground">Send</strong> {alerted ? "to email him directly." : "to confirm your request."}
+                </p>
+                <p className="mt-6 text-[10px] uppercase tracking-[0.25em] text-accent">Use a different email?</p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {emailOptions(sent.subject, sent.text).map((o) => (
+                    <a
+                      key={o.label}
+                      href={o.href}
+                      target={o.href.startsWith("mailto:") ? undefined : "_blank"}
+                      rel="noreferrer"
+                      className="border border-line px-4 py-2 text-xs uppercase tracking-[0.15em] text-foreground/85 transition-colors hover:border-accent hover:text-accent"
+                    >
+                      {o.label}
+                    </a>
+                  ))}
+                </div>
+                <p className="mt-3 text-xs text-muted">
+                  Or write to <span className="text-foreground">{site.email}</span> from any email.
+                </p>
+              </>
             ) : (
               <>
                 <p className="mt-4 text-muted">
@@ -235,7 +255,7 @@ export default function Contact() {
             <div className="mt-8 flex flex-wrap items-center gap-6">
               <a
                 href={sent.link}
-                target={sent.via === "email" ? undefined : "_blank"}
+                target="_blank"
                 rel="noreferrer"
                 className={`px-6 py-3 text-xs uppercase tracking-[0.25em] hover:bg-foreground hover:text-background ${
                   sent.via === "whatsapp"
@@ -248,7 +268,7 @@ export default function Contact() {
                 {sent.via === "whatsapp"
                   ? "WhatsApp didn't open? Tap here"
                   : sent.via === "email"
-                    ? "Mail app didn't open? Tap here"
+                    ? "Gmail didn't open? Tap here"
                     : "Open Instagram chat"}
               </a>
               {sent.via === "instagram" && (

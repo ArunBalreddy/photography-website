@@ -90,7 +90,7 @@ export default function Album({
                 height={work.height}
                 sizes="(min-width: 1024px) 25vw, (min-width: 768px) 33vw, 50vw"
                 className="h-auto w-full"
-                {...blurProps(work.src)}
+                {...blurProps(work.src, work.blur)}
               />
               <span className="tile-glare pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
               {work.kind !== "photo" && (

@@ -1,8 +1,9 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { site, works, type Category } from "@/content/site";
+import { site, type Work } from "@/content/site";
+import type { GalleryFolder } from "@/lib/gallery";
 import SectionHeading from "./SectionHeading";
 import Reveal from "./Reveal";
 import Folder, { type FolderData } from "./portfolio/Folder";
@@ -10,18 +11,19 @@ import Album from "./portfolio/Album";
 import Lightbox, { type Direction } from "./portfolio/Lightbox";
 import SectionLogo from "./SectionLogo";
 
-const FOLDER_ORDER: Category[] = ["Weddings", "Kids", "Portraits", "Couples", "Food & Commercial"];
 const OPEN_DELAY_MS = 420; // let the flap swing open before the prints fly out
 const CLOSE_MS = 300;
 
-// One folder per category, plus Films. A category with a single item (e.g. Maternity's one reel)
-// gets no folder of its own — it still lives in Films.
-const folders: FolderData[] = [
-  ...FOLDER_ORDER.map((c) => ({ key: c, title: c, items: works.filter((w) => w.category === c) })),
-  { key: "Films", title: "Films", items: works.filter((w) => w.kind !== "photo") },
-].filter((f) => f.items.length >= 2);
+// One folder per admin-managed folder that has something in it, plus Films (every video and reel).
+function buildFolders(folders: GalleryFolder[], works: Work[]): FolderData[] {
+  return [
+    ...folders.map((f) => ({ key: f.id, title: f.title, items: works.filter((w) => w.folder === f.id) })),
+    { key: "films", title: "Films", items: works.filter((w) => w.kind !== "photo") },
+  ].filter((f) => f.items.length > 0);
+}
 
-export default function Gallery() {
+export default function Gallery({ folders: source, works }: { folders: GalleryFolder[]; works: Work[] }) {
+  const folders = useMemo(() => buildFolders(source, works), [source, works]);
   const [opening, setOpening] = useState<string | null>(null);
   const [album, setAlbum] = useState<{ folder: FolderData; origin: DOMRect } | null>(null);
   const [closing, setClosing] = useState(false);
@@ -45,7 +47,7 @@ export default function Gallery() {
       history.pushState({ album: folder.key }, "");
     });
     return () => cancelAnimationFrame(raf);
-  }, []);
+  }, [folders]);
 
   const openFolder = (folder: FolderData, origin: DOMRect) => {
     if (opening || album) return;

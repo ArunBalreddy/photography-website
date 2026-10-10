@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { blurProps } from "@/content/blur";
-import { site, works } from "@/content/site";
+import { site } from "@/content/site";
+import { getGallery } from "@/lib/gallery";
 import Reveal from "./Reveal";
 
 async function currentYear() {
@@ -9,6 +10,7 @@ async function currentYear() {
 }
 
 export default async function Footer() {
+  const { works } = await getGallery();
   return (
     <footer className="border-t border-line">
       <a
@@ -27,7 +29,7 @@ export default async function Footer() {
               fill
               sizes="(min-width: 768px) 17vw, 33vw"
               className="object-cover opacity-70 transition-opacity duration-500 hover:opacity-100"
-              {...blurProps(w.src)}
+              {...blurProps(w.src, w.blur)}
             />
           </Reveal>
         ))}

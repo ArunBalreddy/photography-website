@@ -62,6 +62,8 @@ export const blur: Record<string, string> = {
   "/instagram/Dc1ODw8PwVF.jpg": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAA4KCw0LCQ4NDA0QDw4RFiQXFhQUFiwgIRokNC43NjMuMjI6QVNGOj1OPjIySGJJTlZYXV5dOEVmbWVabFNbXVn/2wBDAQ8QEBYTFioXFypZOzI7WVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVn/wAARCAAOAAgDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAT/xAAhEAACAQIGAwAAAAAAAAAAAAACAwEABAUREiFRYRMUMf/EABQBAQAAAAAAAAAAAAAAAAAAAAX/xAAYEQEAAwEAAAAAAAAAAAAAAAABAAIxQf/aAAwDAQACEQMRAD8AsDA7e3e9qGLZBL0kDOZn7t1nSpMR9gb638DyWJjJFETxtl3Si2x2JFVyf//Z",
 };
 
-/** next/image props for a blur-up placeholder, when we have one for this src. */
-export const blurProps = (src: string) =>
-  blur[src] ? ({ placeholder: "blur", blurDataURL: blur[src] } as const) : ({} as const);
+/** next/image props for a blur-up placeholder: the item's own (uploads) or a generated one (built-ins). */
+export const blurProps = (src: string, own?: string) => {
+  const data = own ?? blur[src];
+  return data ? ({ placeholder: "blur", blurDataURL: data } as const) : ({} as const);
+};

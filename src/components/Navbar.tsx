@@ -205,7 +205,7 @@ export default function Navbar() {
               <InstagramIcon className="h-6 w-6" />
             </a>
             {site.email && (
-              <a href={emailLink("Photoshoot enquiry")} aria-label="Email" tabIndex={open ? 0 : -1} className="hover:text-accent">
+              <a href={emailLink("Photoshoot enquiry")} target="_blank" rel="noreferrer" aria-label="Email" tabIndex={open ? 0 : -1} className="hover:text-accent">
                 <MailIcon className="h-6 w-6" />
               </a>
             )}
