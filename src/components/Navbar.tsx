@@ -23,8 +23,12 @@ export default function Navbar() {
       <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-6">
         <a href="#top" aria-label={site.fullName}>
           <span className="flex flex-col leading-none">
-            <span className="font-serif text-[clamp(1.25rem,6.8vw,1.625rem)] tracking-[0.2em] md:text-3xl">{site.name}</span>
-            <span className="mt-1 font-serif text-base italic text-accent md:text-lg">by {site.photographer}</span>
+            <span className="font-serif text-[clamp(1.375rem,7.2vw,1.875rem)] font-semibold tracking-[0.2em] md:text-4xl lg:text-3xl xl:text-4xl">
+              {site.name}
+            </span>
+            <span className="mt-1 font-serif text-[17px] font-medium italic text-accent md:text-xl lg:text-lg xl:text-xl">
+              by {site.photographer}
+            </span>
           </span>
         </a>
 
