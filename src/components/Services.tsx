@@ -8,7 +8,7 @@ export default function Services() {
     <section id="services" className="mx-auto max-w-7xl px-6 py-28 md:py-36">
       <SectionHeading eyebrow="Services & pricing" title="Ways to work together" className="mb-16 text-center" />
 
-      <div className="grid gap-8 md:grid-cols-3">
+      <div className="grid gap-8 md:grid-cols-2 xl:grid-cols-4">
         {services.map((s, i) => (
           <Reveal key={s.name} delay={i * 120}>
             <article

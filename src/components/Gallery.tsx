@@ -2,21 +2,28 @@
 
 import Image from "next/image";
 import { useCallback, useEffect, useState } from "react";
-import { categories, site, workImage, works, workUrl, type Category } from "@/content/site";
+import { categories, site, works, workUrl, type Category } from "@/content/site";
 import SectionHeading from "./SectionHeading";
 
 type Filter = "All" | "Films" | Category;
 
+const PAGE = 16;
+const isFilm = (kind: string) => kind !== "photo";
+// Only offer filters that have something in them.
+const filters: Filter[] = ["All", ...categories.filter((c) => works.some((w) => w.category === c)), "Films"];
+
 export default function Gallery() {
   const [filter, setFilter] = useState<Filter>("All");
+  const [shown, setShown] = useState(PAGE);
   const [active, setActive] = useState<number | null>(null);
 
-  const visible =
+  const matching =
     filter === "All"
       ? works
       : filter === "Films"
-        ? works.filter((w) => w.kind === "reel")
+        ? works.filter((w) => isFilm(w.kind))
         : works.filter((w) => w.category === filter);
+  const visible = matching.slice(0, shown);
 
   const close = useCallback(() => setActive(null), []);
   const step = useCallback(
@@ -40,7 +47,7 @@ export default function Gallery() {
   }, [active, close, step]);
 
   const current = active === null ? null : visible[active];
-  const filters: Filter[] = ["All", ...categories, "Films"];
+  const currentUrl = current && workUrl(current);
 
   return (
     <section id="work" className="mx-auto max-w-7xl px-6 py-28 md:py-36">
@@ -52,7 +59,10 @@ export default function Gallery() {
               key={c}
               role="tab"
               aria-selected={filter === c}
-              onClick={() => setFilter(c)}
+              onClick={() => {
+                setFilter(c);
+                setShown(PAGE);
+              }}
               className={`border px-4 py-2 text-xs uppercase tracking-[0.2em] transition-colors ${
                 filter === c
                   ? "border-accent bg-accent text-background"
@@ -74,14 +84,14 @@ export default function Gallery() {
             aria-label={`Open ${work.title}`}
           >
             <Image
-              src={workImage(work)}
+              src={work.src}
               alt={work.alt}
               width={work.width}
               height={work.height}
               sizes="(min-width: 1024px) 25vw, (min-width: 768px) 33vw, 50vw"
               className="h-auto w-full transition-transform duration-700 group-hover:scale-105"
             />
-            {work.kind === "reel" && (
+            {isFilm(work.kind) && (
               <span className="absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-full bg-black/60 backdrop-blur-sm">
                 <svg viewBox="0 0 24 24" className="ml-0.5 h-4 w-4 fill-foreground" aria-hidden>
                   <path d="M8 5v14l11-7z" />
@@ -90,7 +100,7 @@ export default function Gallery() {
             )}
             <div className="absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-black/80 via-transparent to-transparent p-5 opacity-0 transition-opacity duration-500 group-hover:opacity-100 group-focus-visible:opacity-100">
               <span className="text-[10px] uppercase tracking-[0.3em] text-accent">
-                {work.kind === "reel" ? `Film · ${work.category}` : work.category}
+                {isFilm(work.kind) ? `Film · ${work.category}` : work.category}
               </span>
               <span className="font-serif text-xl">{work.title}</span>
             </div>
@@ -98,7 +108,15 @@ export default function Gallery() {
         ))}
       </div>
 
-      <div className="mt-14 text-center">
+      <div className="mt-14 flex flex-wrap items-center justify-center gap-4">
+        {shown < matching.length && (
+          <button
+            onClick={() => setShown((n) => n + PAGE)}
+            className="bg-foreground px-8 py-4 text-xs uppercase tracking-[0.25em] text-background transition-colors hover:bg-accent"
+          >
+            Show more ({matching.length - shown})
+          </button>
+        )}
         <a
           href={site.instagram}
           target="_blank"
@@ -127,23 +145,32 @@ export default function Gallery() {
                 allow="autoplay; encrypted-media; picture-in-picture"
                 allowFullScreen
               />
-            ) : (
-              <Image
-                src={workImage(current)}
-                alt={current.alt}
-                fill
-                sizes="100vw"
-                className="object-contain"
+            ) : current.kind === "video" ? (
+              <video
+                key={current.id}
+                src={current.video}
+                poster={current.src}
+                controls
+                autoPlay
+                playsInline
+                className="h-full max-h-full w-auto max-w-full bg-black"
               />
+            ) : (
+              <Image src={current.src} alt={current.alt} fill sizes="100vw" className="object-contain" />
             )}
           </div>
-          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 text-center">
+          <div className="absolute bottom-6 left-1/2 w-max max-w-[90vw] -translate-x-1/2 text-center">
             <p className="font-serif text-2xl">{current.title}</p>
             <p className="text-[10px] uppercase tracking-[0.3em] text-muted">
-              {current.category} · {active! + 1} / {visible.length} ·{" "}
-              <a href={workUrl(current)} target="_blank" rel="noreferrer" className="text-accent hover:underline">
-                View on Instagram
-              </a>
+              {current.category} · {active! + 1} / {visible.length}
+              {currentUrl && (
+                <>
+                  {" · "}
+                  <a href={currentUrl} target="_blank" rel="noreferrer" className="text-accent hover:underline">
+                    View on Instagram
+                  </a>
+                </>
+              )}
             </p>
           </div>
           <button onClick={close} aria-label="Close" className="absolute right-6 top-6 text-3xl font-light hover:text-accent">

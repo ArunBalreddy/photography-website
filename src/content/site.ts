@@ -48,45 +48,108 @@ export const nav = [
   { label: "Contact", href: "#contact" },
 ];
 
-export const heroSlides = [
-  { src: unsplash("1519741497674-611481863552"), alt: "Bride and groom at golden hour" },
-  { src: unsplash("1506744038136-46273834b3fb"), alt: "Valley with mountains and a river at dusk" },
-  { src: unsplash("1534528741775-53994a69daeb"), alt: "Close portrait of a woman in soft light" },
-  { src: unsplash("1477959858617-67f85cf4f1df"), alt: "City skyline at blue hour" },
+export type HeroSlide = {
+  src: string;
+  alt: string;
+  /** CSS object-position — keeps faces in frame on both wide desktops and tall phones. */
+  position: string;
+};
+
+// High-resolution exports of Nikhil's originals (public/hero), shown full-screen with a slow zoom.
+export const heroSlides: HeroSlide[] = [
+  { src: "/hero/couple-petals.jpg", alt: "Couple embracing as rose petals fall around them", position: "60% 50%" },
+  { src: "/hero/wedding-garlands.jpg", alt: "Bride and groom under a marigold mandap", position: "50% 45%" },
+  { src: "/hero/kids-traditional-set.jpg", alt: "Little girl in a silk langa in a village-style set", position: "45% 50%" },
+  { src: "/hero/bride-groom-smile.jpg", alt: "Groom in a turban smiling beside his bride", position: "50% 45%" },
+  { src: "/hero/baby-temple-steps.jpg", alt: "Baby girl in a red silk dress on carved temple steps", position: "50% 45%" },
+  { src: "/hero/smoke-and-spice.jpg", alt: "Smoking plate of spicy food on a black background", position: "50% 50%" },
 ];
 
-export type Category = "Weddings" | "Couples" | "Maternity" | "Kids" | "Portraits";
-export const categories: Category[] = ["Weddings", "Couples", "Maternity", "Kids", "Portraits"];
+export type Category = "Weddings" | "Couples" | "Maternity" | "Kids" | "Portraits" | "Food & Commercial";
+export const categories: Category[] = ["Weddings", "Couples", "Maternity", "Kids", "Portraits", "Food & Commercial"];
 
 export type Work = {
-  /** Instagram shortcode — the image lives at /instagram/<id>.jpg. */
   id: string;
-  kind: "photo" | "reel";
+  /** photo: /photos · video: self-hosted film in /films · reel: Instagram reel (official embed). */
+  kind: "photo" | "video" | "reel";
   category: Category;
   title: string;
   alt: string;
+  /** The image, or the cover frame for videos and reels. */
+  src: string;
   width: number;
   height: number;
+  video?: string;
 };
 
-// Latest posts from @__picturesque__1. Reels play through Instagram's official embed.
+const photo = (slug: string, category: Category, title: string, alt: string, width: number, height: number): Work => ({
+  id: slug, kind: "photo", category, title, alt, src: `/photos/${slug}.jpg`, width, height,
+});
+const film = (slug: string, category: Category, title: string, alt: string, width: number, height: number): Work => ({
+  id: slug, kind: "video", category, title, alt, src: `/films/${slug}.jpg`, video: `/films/${slug}.mp4`, width, height,
+});
+const reel = (id: string, category: Category, title: string, alt: string, width: number, height: number): Work => ({
+  id, kind: "reel", category, title, alt, src: `/instagram/${id}.jpg`, width, height,
+});
+
+// Nikhil's own photos and films (exported from the originals, metadata stripped) plus his Instagram reels.
+// Order is the "All" view — mixed so every category shows up early.
 export const works: Work[] = [
-  { id: "Dbs2DimycCx", kind: "reel", category: "Maternity", title: "Seemantham", alt: "Couple at a traditional seemantham ceremony", width: 360, height: 640 },
-  { id: "DaBJZbAD19O", kind: "photo", category: "Weddings", title: "Groom Visuals", alt: "Groom in a turban beside his bride", width: 480, height: 640 },
-  { id: "Db7-S_-SNOS", kind: "reel", category: "Kids", title: "Little Ones", alt: "Smiling baby girl in a traditional dress", width: 360, height: 640 },
-  { id: "DNguFppzyvo", kind: "photo", category: "Couples", title: "Mallikarjun & Shivani", alt: "Black and white silhouette of a couple", width: 480, height: 640 },
-  { id: "DGMh6oESx1b", kind: "photo", category: "Weddings", title: "Haldi", alt: "Bride laughing during the haldi ceremony", width: 512, height: 640 },
-  { id: "DWO6lVvDxFs", kind: "reel", category: "Weddings", title: "Sita Kalyanam", alt: "Wedding invitation among green leaves", width: 360, height: 640 },
-  { id: "DTVbWRyD1Mb", kind: "photo", category: "Portraits", title: "Rithika — Classical Collection", alt: "Classical dance portraits of a young girl", width: 640, height: 640 },
-  { id: "DbOoxyzEjJ2", kind: "photo", category: "Couples", title: "Abhilash & Pratyusha", alt: "Couple sitting together outdoors", width: 512, height: 640 },
-  { id: "Dcgy58XDwaj", kind: "photo", category: "Kids", title: "Happy Birthday Rithanshi", alt: "Mother holding her baby at a birthday celebration", width: 480, height: 640 },
-  { id: "DYIzefyPyyY", kind: "reel", category: "Weddings", title: "Wedding Film", alt: "Bride and groom during wedding rituals", width: 360, height: 640 },
-  { id: "DTEYtFtkr9e", kind: "photo", category: "Kids", title: "Drithivamika", alt: "Little girl in traditional attire", width: 512, height: 640 },
-  { id: "Dc1ODw8PwVF", kind: "reel", category: "Weddings", title: "Behind the Lens", alt: "Camera held up above wedding garlands", width: 361, height: 640 },
+  photo("couple-petals", "Couples", "Falling Petals", "Couple embracing as rose petals fall around them", 1333, 2000),
+  photo("kids-blue-door", "Kids", "The Blue Door", "Girl in a green silk dress sitting before a blue wooden door", 1333, 2000),
+  photo("wedding-garlands", "Weddings", "Garlands & Vows", "Bride and groom holding hands under a marigold mandap", 1333, 2000),
+  photo("masala-pot-smoke", "Food & Commercial", "Masala Pot — Smoked", "Smoke rising over a kebab platter", 1333, 2000),
+  photo("classical-pillar", "Portraits", "Temple Pillar", "Woman in classical dance attire smiling beside a painted pillar", 1333, 2000),
+  photo("baby-temple-steps", "Kids", "Temple Steps", "Baby girl in a red silk dress sitting on carved temple steps", 1333, 2000),
+  photo("bride-groom-smile", "Weddings", "Together, Finally", "Groom in a turban smiling beside his bride", 1333, 2000),
+  film("masala-pot", "Food & Commercial", "Masala Pot — Restaurant Film", "Promo film for Masala Pot restaurant", 720, 1280),
+  photo("ketel-one-garden", "Food & Commercial", "Ketel One — Garden", "Ketel One bottle and cocktail resting among green leaves", 1333, 2000),
+  photo("couple-back-to-back", "Couples", "Back to Back", "Couple sitting back to back, eyes closed, smiling", 1333, 2000),
+  photo("kids-traditional-set", "Kids", "Little Traditions", "Little girl in a silk langa playing in a village-style set", 2000, 1333),
+  photo("classical-parrot", "Portraits", "The Parrot & the Lotus", "Classical dancer holding a parrot and a lotus", 1333, 2000),
+  photo("wedding-rituals", "Weddings", "The Sacred Fire", "Bride and groom seated together during the wedding rituals", 1136, 2000),
+  reel("Dbs2DimycCx", "Maternity", "Seemantham", "Couple at a traditional seemantham ceremony", 360, 640),
+  photo("flaming-leg-pieces", "Food & Commercial", "Flaming Leg Pieces", "Gloved hand holding smoking chicken skewers", 1153, 2000),
+  photo("baby-telephone", "Kids", "Pink Telephone", "Baby in a pink dress sitting by a pink telephone booth", 1333, 2000),
+  photo("bride-coconut", "Weddings", "The Bride", "Bride in a red silk saree holding a decorated coconut", 1333, 2000),
+  photo("kids-that-smile", "Kids", "That Smile", "Close-up of a smiling girl wearing a maang tikka", 1333, 2000),
+  photo("talisker", "Food & Commercial", "Talisker 10", "Talisker single malt bottle with stone statues behind", 1333, 2000),
+  photo("henna-portrait", "Portraits", "Henna & Sunlight", "Woman resting her chin on hennaed hands in soft light", 1333, 2000),
+  photo("mother-baby-laughter", "Kids", "Bubbles & Laughter", "Mother laughing as she holds her baby among soap bubbles", 1333, 2000),
+  film("cafe-stories", "Food & Commercial", "Café Stories", "Café promo film featuring mango éclairs", 720, 1270),
+  photo("bride-groom-glance", "Weddings", "A Quiet Glance", "Bride looking down as the groom smiles behind her", 1333, 2000),
+  photo("broccoli-feast", "Food & Commercial", "Broccoli Feast", "Creamy broccoli dish on lettuce against a blue backdrop", 1333, 2000),
+  photo("baby-mango", "Kids", "Summer Mango", "Baby holding a mango beside a yellow painted wall", 1333, 2000),
+  photo("classical-grace", "Portraits", "Classical Grace", "Classical dancer in full costume posing under trees", 1333, 2000),
+  photo("wedding-silhouette", "Weddings", "Silhouette", "Silhouette of a bride and groom forehead to forehead", 1392, 2000),
+  photo("masala-pot-green", "Food & Commercial", "Masala Pot — Green Kebabs", "Green kebabs in a dish with spices falling", 1333, 2000),
+  photo("kids-garden", "Kids", "Garden Dreams", "Girl in a green silk langa sitting by a flowering wall", 1333, 2000),
+  reel("Db7-S_-SNOS", "Kids", "Little Ones", "Smiling baby girl in a traditional dress", 360, 640),
+  photo("smoke-and-spice", "Food & Commercial", "Smoke & Spice", "Smoking plate of spicy food on a black background", 2000, 1100),
+  photo("baby-little-red", "Kids", "Little Red", "Close-up of a baby girl in a red silk dress", 1333, 2000),
+  photo("expressions", "Portraits", "Expressions", "Dancer framing her face with her hands", 1080, 1080),
+  photo("masala-pot-grill", "Food & Commercial", "Masala Pot — Grill", "Smoking grilled chicken with green chutney", 1333, 2000),
+  photo("mother-baby-bubbles", "Kids", "Bubble Time", "Smiling baby in her mother's arms reaching for bubbles", 1333, 2000),
+  film("glimpse", "Food & Commercial", "Glimpse", "Food highlights reel", 720, 1280),
+  photo("kids-village-tales", "Kids", "Village Tales", "Little girl in traditional jewellery posing in a rustic set", 1333, 2000),
+  photo("ketel-one-bar", "Food & Commercial", "Ketel One — Bar Series", "Ketel One vodka bottle beside a cocktail in a brass cup", 1333, 2000),
+  reel("DWO6lVvDxFs", "Weddings", "Sita Kalyanam", "Wedding invitation among green leaves", 360, 640),
+  photo("baby-basket", "Kids", "Basket Games", "Baby in a purple langa playing with a woven basket", 1333, 2000),
+  photo("onion-rings", "Food & Commercial", "Crispy Onion Rings", "Stack of crispy onion rings with a dip", 1333, 2000),
+  photo("baby-floral-set", "Kids", "In Full Bloom", "Baby sitting on a little cane chair in a floral set", 1235, 1854),
+  photo("chilli-lime-fry", "Food & Commercial", "Chilli Lime Fry", "Spicy fry on a wooden board topped with lime slices", 1333, 2000),
+  reel("DYIzefyPyyY", "Weddings", "Wedding Film", "Bride and groom during wedding rituals", 360, 640),
+  photo("masala-pot-platter", "Food & Commercial", "Masala Pot — Kebab Platter", "Kebab platter on a slate for Masala Pot restaurant", 1333, 2000),
+  photo("fresh-bowl", "Food & Commercial", "Fresh & Crunchy", "Salad bowl with tomato and crunchy toppings", 1333, 2000),
+  photo("curry-bowl", "Food & Commercial", "Curry & Papad", "Curry in a black bowl with a papad", 1333, 2000),
+  reel("Dc1ODw8PwVF", "Weddings", "Behind the Lens", "Camera held up above wedding garlands", 361, 640),
+  photo("masala-pot-signature", "Food & Commercial", "Masala Pot — Signature", "Grilled dish on a board under the Masala Pot logo", 1333, 2000),
+  photo("from-the-kadai", "Food & Commercial", "From the Kadai", "Smoke rising from a dish in an iron kadai", 1333, 2000),
+  photo("creamy-rolls", "Food & Commercial", "Creamy Rolls", "Rolls in a creamy sauce on a wooden board", 1333, 2000),
+  photo("mango-eclairs", "Food & Commercial", "Mango Éclairs", "Mango éclair topped with cream and mango cubes", 1333, 2000),
 ];
 
-export const workImage = (w: Work) => `/instagram/${w.id}.jpg`;
-export const workUrl = (w: Work) => `https://www.instagram.com/${w.kind === "reel" ? "reel" : "p"}/${w.id}/`;
+export const workUrl = (w: Work) => (w.kind === "reel" ? `https://www.instagram.com/reel/${w.id}/` : null);
 
 export const about = {
   image: unsplash("1452587925148-ce544e77e70d"),
@@ -107,7 +170,7 @@ export const services = [
     name: "Portraits & Kids",
     price: "₹15,000",
     unit: "per session",
-    image: "/instagram/DTVbWRyD1Mb.jpg",
+    image: "/photos/kids-blue-door.jpg",
     bookAs: "Portraits",
     features: ["Birthdays & classical portraits", "2 hours, one location", "40+ edited images", "Online gallery"],
   },
@@ -115,7 +178,7 @@ export const services = [
     name: "Wedding Story",
     price: "₹1,50,000",
     unit: "starting from",
-    image: "/instagram/DaBJZbAD19O.jpg",
+    image: "/photos/bride-groom-smile.jpg",
     bookAs: "Wedding",
     features: ["Full-day coverage", "Two photographers", "600+ edited images", "Heirloom album"],
     featured: true,
@@ -127,6 +190,14 @@ export const services = [
     image: "/instagram/Dbs2DimycCx.jpg",
     bookAs: "Seemantham / Srimantham",
     features: ["Home or outdoor shoot", "Ceremony coverage", "50+ edited images", "Short highlight reel"],
+  },
+  {
+    name: "Food & Commercial",
+    price: "On request",
+    unit: "pricing",
+    image: "/photos/masala-pot-smoke.jpg",
+    bookAs: "Commercial & Product",
+    features: ["Restaurant menus & social media", "Styled food & product shots", "Short promo films", "Commercial usage licence"],
   },
 ];
 

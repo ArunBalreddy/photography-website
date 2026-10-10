@@ -23,11 +23,12 @@ export default function Hero() {
           aria-hidden={i !== index}
         >
           <Image
-            src={`${slide.src}?w=2000&q=80`}
+            src={slide.src}
             alt={slide.alt}
             fill
             sizes="100vw"
             preload={i === 0}
+            style={{ objectPosition: slide.position }}
             className={`object-cover ${i === index ? "animate-[kenburns_8s_ease-out_forwards]" : ""}`}
           />
         </div>
