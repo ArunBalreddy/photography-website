@@ -43,14 +43,14 @@ export default function Services() {
                   ))}
                 </ul>
                 <a
-                  href="#contact"
+                  href={`#book=${encodeURIComponent(s.bookAs)}`}
                   className={`mt-8 block py-3 text-center text-xs uppercase tracking-[0.25em] transition-colors ${
                     s.featured
                       ? "bg-accent text-background hover:bg-foreground"
                       : "border border-line hover:border-accent hover:text-accent"
                   }`}
                 >
-                  Enquire
+                  Book this
                 </a>
               </div>
             </article>

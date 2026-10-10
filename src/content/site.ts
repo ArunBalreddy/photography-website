@@ -8,8 +8,9 @@ export const site = {
   tagline: "Photography that remembers how it felt.",
   photographer: "Nikhil Sonu",
   location: "Hyderabad, India · Available worldwide",
-  email: "hello@lumenstudio.example",
   phone: "+91 81438 24214",
+  /** WhatsApp number, digits only with country code — bookings are sent here. */
+  whatsapp: "918143824214",
   instagram: "https://www.instagram.com/__picturesque__1/",
   social: [
     { label: "Instagram", href: "https://www.instagram.com/__picturesque__1/" },
@@ -17,6 +18,24 @@ export const site = {
     { label: "Behance", href: "https://behance.net" },
   ],
 };
+
+/** Click-to-chat link that opens WhatsApp with `text` pre-filled to the studio's number. */
+export const whatsappLink = (text: string) => `https://wa.me/${site.whatsapp}?text=${encodeURIComponent(text)}`;
+
+export const shootTypes = [
+  "Wedding",
+  "Pre-Wedding & Couples",
+  "Engagement",
+  "Haldi & Mehendi",
+  "Seemantham / Srimantham",
+  "Maternity",
+  "Newborn",
+  "Kids & Birthdays",
+  "Portraits",
+  "Commercial & Product",
+  "Events",
+  "Other",
+];
 
 export const nav = [
   { label: "Work", href: "#work" },
@@ -86,6 +105,7 @@ export const services = [
     price: "₹15,000",
     unit: "per session",
     image: "/instagram/DTVbWRyD1Mb.jpg",
+    bookAs: "Portraits",
     features: ["Birthdays & classical portraits", "2 hours, one location", "40+ edited images", "Online gallery"],
   },
   {
@@ -93,6 +113,7 @@ export const services = [
     price: "₹1,50,000",
     unit: "starting from",
     image: "/instagram/DaBJZbAD19O.jpg",
+    bookAs: "Wedding",
     features: ["Full-day coverage", "Two photographers", "600+ edited images", "Heirloom album"],
     featured: true,
   },
@@ -101,6 +122,7 @@ export const services = [
     price: "₹25,000",
     unit: "per session",
     image: "/instagram/Dbs2DimycCx.jpg",
+    bookAs: "Seemantham / Srimantham",
     features: ["Home or outdoor shoot", "Ceremony coverage", "50+ edited images", "Short highlight reel"],
   },
 ];
