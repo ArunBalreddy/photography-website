@@ -5,7 +5,7 @@ const unsplash = (id: string) => `https://images.unsplash.com/photo-${id}`;
 export const site = {
   name: "PICTURESQUE",
   fullName: "PICTURESQUE by Nikhil Sonu",
-  tagline: "Photography that remembers how it felt.",
+  tagline: "Your Story, Our Perspective.",
   photographer: "Nikhil Sonu",
   location: "Hyderabad, India · Available worldwide",
   phone: "+91 81438 24214",
