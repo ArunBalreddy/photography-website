@@ -6,7 +6,7 @@ import Services from "@/components/Services";
 import Testimonials from "@/components/Testimonials";
 import Contact from "@/components/Contact";
 import Footer from "@/components/Footer";
-import WhatsAppButton from "@/components/WhatsAppButton";
+import FloatingContact from "@/components/FloatingContact";
 
 export default function Home() {
   return (
@@ -21,7 +21,7 @@ export default function Home() {
         <Contact />
       </main>
       <Footer />
-      <WhatsAppButton />
+      <FloatingContact />
     </>
   );
 }

@@ -6,6 +6,7 @@ import { formatShootDate, type Booking } from "@/lib/booking";
 import SectionHeading from "./SectionHeading";
 import Reveal from "./Reveal";
 import WhatsAppIcon from "./WhatsAppIcon";
+import InstagramIcon from "./InstagramIcon";
 
 const field =
   "w-full border-b border-line bg-transparent py-3 text-foreground placeholder:text-muted/60 focus:border-accent focus:outline-none";
@@ -18,13 +19,17 @@ function todayISO() {
   return new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
 }
 
+type Via = "whatsapp" | "instagram";
+
 // Each booking does two things at once: /api/booking sends the studio an instant WhatsApp alert
-// (CallMeBot), and the visitor's own WhatsApp opens pre-filled so they can chat directly.
+// (CallMeBot), and the visitor's chosen app opens so they can message the studio directly —
+// WhatsApp pre-filled, or an Instagram DM with the booking copied to paste (Instagram has no pre-fill).
 export default function Contact() {
   const sectionRef = useRef<HTMLElement>(null);
   const [shoot, setShoot] = useState("");
-  const [sentLink, setSentLink] = useState<string | null>(null);
+  const [sent, setSent] = useState<{ via: Via; link: string; text: string } | null>(null);
   const [alerted, setAlerted] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     // "Book this" buttons elsewhere link to #book=<shoot type> to preselect it here.
@@ -32,8 +37,7 @@ export default function Contact() {
       if (!location.hash.startsWith("#book=")) return;
       const type = decodeURIComponent(location.hash.slice("#book=".length));
       if (shootTypes.includes(type)) setShoot(type);
-      setSentLink(null);
-      setAlerted(false);
+      setSent(null);
       history.replaceState(null, "", "#contact");
       sectionRef.current?.scrollIntoView({ behavior: "smooth" });
     };
@@ -44,6 +48,8 @@ export default function Contact() {
 
   function onSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    const via: Via =
+      (e.nativeEvent as SubmitEvent).submitter?.getAttribute("value") === "instagram" ? "instagram" : "whatsapp";
     const data = new FormData(e.currentTarget);
     const get = (k: string) => String(data.get(k) ?? "").trim();
     const booking: Booking & { website: string } = {
@@ -68,21 +74,34 @@ export default function Contact() {
       .then((res) => setAlerted(res.ok))
       .catch(() => {});
 
-    const lines = [
+    // WhatsApp renders *bold*; Instagram DMs don't, so keep those plain.
+    const b = (label: string) => (via === "whatsapp" ? `*${label}:*` : `${label}:`);
+    const text = [
       `Hi ${firstName}! I'd like to book a photoshoot 📸`,
       "",
-      `*Shoot:* ${get("shoot")}`,
-      `*Date:* ${formatShootDate(get("date"))}`,
-      `*Time:* ${get("time")}`,
-      get("location") ? `*Location:* ${get("location")}` : null,
-      `*Name:* ${get("name")}`,
-      `*Phone:* ${get("phone")}`,
-      get("message") ? `\n${get("message")}` : null,
-    ].filter((line) => line !== null);
+      `${b("Shoot")} ${booking.shoot}`,
+      `${b("Date")} ${formatShootDate(booking.date)}`,
+      `${b("Time")} ${booking.time}`,
+      booking.location ? `${b("Location")} ${booking.location}` : null,
+      `${b("Name")} ${booking.name}`,
+      `${b("Phone")} ${booking.phone}`,
+      booking.message ? `\n${booking.message}` : null,
+    ]
+      .filter((line) => line !== null)
+      .join("\n");
 
-    const link = whatsappLink(lines.join("\n"));
-    setSentLink(link);
+    const link = via === "whatsapp" ? whatsappLink(text) : site.instagramDM;
+    if (via === "instagram") {
+      setCopied(false);
+      navigator.clipboard?.writeText(text).then(() => setCopied(true), () => {});
+    }
+    setSent({ via, link, text });
     if (!window.open(link, "_blank", "noopener")) window.location.href = link;
+  }
+
+  function copyAgain() {
+    if (!sent) return;
+    navigator.clipboard?.writeText(sent.text).then(() => setCopied(true), () => {});
   }
 
   return (
@@ -95,18 +114,29 @@ export default function Contact() {
         <SectionHeading eyebrow="Book a shoot" title="Let's make something worth keeping." />
         <Reveal delay={100}>
           <p className="mt-6 text-lg text-muted">
-            Pick what you&apos;d like to shoot and a date. Your booking request opens in WhatsApp, ready to send
-            straight to {site.photographer}.
+            Pick what you&apos;d like to shoot and a date, then send your request to {site.photographer} on WhatsApp
+            or Instagram — whichever you prefer.
           </p>
-          <a
-            href={whatsappLink(`Hi ${firstName}! I have a question about a photoshoot.`)}
-            target="_blank"
-            rel="noreferrer"
-            className="mt-8 inline-flex items-center gap-3 border border-[#25D366]/60 px-6 py-3 text-xs uppercase tracking-[0.25em] text-[#25D366] transition-colors hover:bg-[#25D366] hover:text-background"
-          >
-            <WhatsAppIcon className="h-4 w-4" />
-            Chat on WhatsApp
-          </a>
+          <div className="mt-8 flex flex-wrap gap-3">
+            <a
+              href={whatsappLink(`Hi ${firstName}! I have a question about a photoshoot.`)}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-3 border border-[#25D366]/60 px-6 py-3 text-xs uppercase tracking-[0.25em] text-[#25D366] transition-colors hover:bg-[#25D366] hover:text-background"
+            >
+              <WhatsAppIcon className="h-4 w-4" />
+              Chat on WhatsApp
+            </a>
+            <a
+              href={site.instagramDM}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-3 border border-[#E1306C]/60 px-6 py-3 text-xs uppercase tracking-[0.25em] text-[#E1306C] transition-colors hover:bg-[#E1306C] hover:text-foreground"
+            >
+              <InstagramIcon className="h-4 w-4" />
+              Message on Instagram
+            </a>
+          </div>
           <dl className="mt-10 space-y-6 text-sm">
             <div>
               <dt className="text-xs uppercase tracking-[0.25em] text-accent">Phone / WhatsApp</dt>
@@ -120,7 +150,7 @@ export default function Contact() {
               <dt className="text-xs uppercase tracking-[0.25em] text-accent">Instagram</dt>
               <dd className="mt-1">
                 <a href={site.instagram} target="_blank" rel="noreferrer" className="hover:text-accent">
-                  @__picturesque__1
+                  @{site.instagramHandle}
                 </a>
               </dd>
             </div>
@@ -133,42 +163,54 @@ export default function Contact() {
       </div>
 
       <Reveal delay={150}>
-        {sentLink ? (
+        {sent ? (
           <div className="border border-line bg-surface p-10">
-            <WhatsAppIcon className="h-10 w-10 text-[#25D366]" />
-            {alerted ? (
-              <>
-                <h3 className="mt-6 font-serif text-4xl">Request sent!</h3>
-                <p className="mt-4 text-muted">
-                  {firstName} has received your booking and will reply on WhatsApp to confirm availability. WhatsApp
-                  is open too — tap <strong className="text-foreground">Send</strong> there if you&apos;d like to chat
-                  with him directly.
-                </p>
-              </>
+            {sent.via === "whatsapp" ? (
+              <WhatsAppIcon className="h-10 w-10 text-[#25D366]" />
+            ) : (
+              <InstagramIcon className="h-10 w-10 text-[#E1306C]" />
+            )}
+            <h3 className="mt-6 font-serif text-4xl">{alerted ? "Request sent!" : "Almost done!"}</h3>
+            {alerted && (
+              <p className="mt-4 text-muted">
+                {firstName} has received your booking and will get back to you to confirm availability.
+              </p>
+            )}
+            {sent.via === "whatsapp" ? (
+              <p className="mt-4 text-muted">
+                Your booking details are ready in WhatsApp — tap <strong className="text-foreground">Send</strong>{" "}
+                {alerted ? "there to chat with him directly." : "to confirm your request."}
+              </p>
             ) : (
               <>
-                <h3 className="mt-6 font-serif text-4xl">Almost done!</h3>
                 <p className="mt-4 text-muted">
-                  Your booking details are ready in WhatsApp — just tap{" "}
-                  <strong className="text-foreground">Send</strong> to confirm your request. {firstName} will reply on
-                  WhatsApp to confirm availability.
+                  {copied ? "Your booking details are copied. " : ""}In the Instagram chat with @{site.instagramHandle},{" "}
+                  <strong className="text-foreground">paste</strong> {copied ? "them" : "the details below"} and tap{" "}
+                  <strong className="text-foreground">Send</strong>.
                 </p>
+                <pre className="mt-6 max-h-48 overflow-auto whitespace-pre-wrap border border-line bg-background/60 p-4 font-sans text-sm text-foreground/80">
+                  {sent.text}
+                </pre>
               </>
             )}
-            <div className="mt-8 flex flex-wrap gap-6">
+            <div className="mt-8 flex flex-wrap items-center gap-6">
               <a
-                href={sentLink}
+                href={sent.link}
                 target="_blank"
                 rel="noreferrer"
-                className="bg-[#25D366] px-6 py-3 text-xs uppercase tracking-[0.25em] text-background hover:bg-foreground"
+                className={`px-6 py-3 text-xs uppercase tracking-[0.25em] hover:bg-foreground hover:text-background ${
+                  sent.via === "whatsapp" ? "bg-[#25D366] text-background" : "bg-[#E1306C] text-foreground"
+                }`}
               >
-                WhatsApp didn&apos;t open? Tap here
+                {sent.via === "whatsapp" ? "WhatsApp didn't open? Tap here" : "Open Instagram chat"}
               </a>
+              {sent.via === "instagram" && (
+                <button onClick={copyAgain} className="text-xs uppercase tracking-[0.25em] underline-offset-8 hover:underline">
+                  {copied ? "Copied ✓ Copy again" : "Copy details"}
+                </button>
+              )}
               <button
-                onClick={() => {
-                  setSentLink(null);
-                  setAlerted(false);
-                }}
+                onClick={() => setSent(null)}
                 className="text-xs uppercase tracking-[0.25em] underline-offset-8 hover:underline"
               >
                 Make another booking
@@ -250,13 +292,22 @@ export default function Contact() {
               aria-hidden
               className="absolute -left-[9999px] h-px w-px opacity-0"
             />
-            <div className="sm:col-span-2">
+            <div className="flex flex-wrap gap-4 sm:col-span-2">
               <button
                 type="submit"
-                className="inline-flex items-center gap-3 bg-[#25D366] px-10 py-4 text-xs uppercase tracking-[0.25em] text-background transition-colors hover:bg-foreground"
+                value="whatsapp"
+                className="inline-flex items-center gap-3 bg-[#25D366] px-8 py-4 text-xs uppercase tracking-[0.25em] text-background transition-colors hover:bg-foreground"
               >
                 <WhatsAppIcon className="h-4 w-4" />
                 Book on WhatsApp
+              </button>
+              <button
+                type="submit"
+                value="instagram"
+                className="inline-flex items-center gap-3 border border-[#E1306C] px-8 py-4 text-xs uppercase tracking-[0.25em] text-[#E1306C] transition-colors hover:bg-[#E1306C] hover:text-foreground"
+              >
+                <InstagramIcon className="h-4 w-4" />
+                Book via Instagram
               </button>
             </div>
           </form>

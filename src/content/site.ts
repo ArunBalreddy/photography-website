@@ -12,6 +12,9 @@ export const site = {
   /** WhatsApp number, digits only with country code — bookings are sent here. */
   whatsapp: "918143824214",
   instagram: "https://www.instagram.com/__picturesque__1/",
+  instagramHandle: "__picturesque__1",
+  /** Opens a DM with the studio (official Instagram short link). */
+  instagramDM: "https://ig.me/m/__picturesque__1",
   social: [
     { label: "Instagram", href: "https://www.instagram.com/__picturesque__1/" },
     { label: "Pinterest", href: "https://pinterest.com" },
