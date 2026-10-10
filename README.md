@@ -8,6 +8,12 @@ A dark, editorial photography portfolio built with Next.js 16, React 19 and Tail
 
 Everything — studio name, copy, photos, prices, testimonials — lives in [`src/content/site.ts`](src/content/site.ts). Photos currently come from Unsplash; replace the URLs with your own (or drop files in `public/` and use `/your-photo.jpg`).
 
+After adding or replacing photos in `public/`, regenerate the blur-up previews (needs Python + Pillow):
+
+```bash
+python3 scripts/blur.py
+```
+
 The contact form opens the visitor's email app pre-filled to `site.email` (no backend needed).
 
 ## Develop

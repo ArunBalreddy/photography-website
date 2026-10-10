@@ -30,6 +30,23 @@ export default function Gallery() {
 
   useEffect(() => () => clearTimeout(timer.current), []);
 
+  // Shared photo links (#photo=<id>, from the lightbox's Share button) open straight onto that photo.
+  useEffect(() => {
+    const m = location.hash.match(/^#photo=(.+)$/);
+    if (!m) return;
+    const id = decodeURIComponent(m[1]);
+    const folder = folders.find((f) => f.items.some((w) => w.id === id));
+    if (!folder) return;
+    const index = folder.items.findIndex((w) => w.id === id);
+    const raf = requestAnimationFrame(() => {
+      history.replaceState(null, "", location.pathname + location.search);
+      setAlbum({ folder, origin: new DOMRect(innerWidth / 2 - 50, innerHeight / 2 - 50, 100, 100) });
+      setLightbox({ index, direction: "open" });
+      history.pushState({ album: folder.key }, "");
+    });
+    return () => cancelAnimationFrame(raf);
+  }, []);
+
   const openFolder = (folder: FolderData, origin: DOMRect) => {
     if (opening || album) return;
     setOpening(folder.key);
@@ -64,6 +81,11 @@ export default function Gallery() {
           : lb,
       ),
     [album],
+  );
+
+  const jump = useCallback(
+    (index: number) => setLightbox((lb) => (lb ? { index, direction: index >= lb.index ? "next" : "prev" } : lb)),
+    [],
   );
 
   useEffect(() => {
@@ -136,6 +158,7 @@ export default function Gallery() {
                 direction={lightbox.direction}
                 onClose={() => setLightbox(null)}
                 onStep={step}
+                onJump={jump}
               />
             )}
           </>,

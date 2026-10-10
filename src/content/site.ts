@@ -57,16 +57,18 @@ export type HeroSlide = {
   alt: string;
   /** CSS object-position — keeps faces in frame on both wide desktops and tall phones. */
   position: string;
+  /** Shown beside the slide counter, e.g. "Couples". */
+  caption: string;
 };
 
 // High-resolution exports of Nikhil's originals (public/hero), shown full-screen with a slow zoom.
 export const heroSlides: HeroSlide[] = [
-  { src: "/hero/couple-petals.jpg", alt: "Couple embracing as rose petals fall around them", position: "60% 50%" },
-  { src: "/hero/wedding-garlands.jpg", alt: "Bride and groom under a marigold mandap", position: "50% 45%" },
-  { src: "/hero/kids-traditional-set.jpg", alt: "Little girl in a silk langa in a village-style set", position: "45% 50%" },
-  { src: "/hero/bride-groom-smile.jpg", alt: "Groom in a turban smiling beside his bride", position: "50% 45%" },
-  { src: "/hero/baby-temple-steps.jpg", alt: "Baby girl in a red silk dress on carved temple steps", position: "50% 45%" },
-  { src: "/hero/smoke-and-spice.jpg", alt: "Smoking plate of spicy food on a black background", position: "50% 50%" },
+  { src: "/hero/couple-petals.jpg", alt: "Couple embracing as rose petals fall around them", position: "60% 50%", caption: "Couples" },
+  { src: "/hero/wedding-garlands.jpg", alt: "Bride and groom under a marigold mandap", position: "50% 45%", caption: "Weddings" },
+  { src: "/hero/kids-traditional-set.jpg", alt: "Little girl in a silk langa in a village-style set", position: "45% 50%", caption: "Kids" },
+  { src: "/hero/bride-groom-smile.jpg", alt: "Groom in a turban smiling beside his bride", position: "50% 45%", caption: "Weddings" },
+  { src: "/hero/baby-temple-steps.jpg", alt: "Baby girl in a red silk dress on carved temple steps", position: "50% 45%", caption: "Kids" },
+  { src: "/hero/smoke-and-spice.jpg", alt: "Smoking plate of spicy food on a black background", position: "50% 50%", caption: "Food & Commercial" },
 ];
 
 export type Category = "Weddings" | "Couples" | "Maternity" | "Kids" | "Portraits" | "Food & Commercial";

@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { blurProps } from "@/content/blur";
 import type { Work } from "@/content/site";
 
 export type FolderData = { key: string; title: string; items: Work[] };
@@ -27,6 +28,7 @@ export default function Folder({
   return (
     <button
       onClick={(e) => onOpen(e.currentTarget.getBoundingClientRect())}
+      data-cursor="Open"
       aria-label={`Open ${folder.title} folder — ${describe(folder.items)}`}
       className={`folder group relative block aspect-[5/4] w-full text-left ${opening ? "is-opening" : ""}`}
     >
@@ -49,6 +51,7 @@ export default function Folder({
               fill
               sizes="(min-width: 1024px) 26vw, (min-width: 640px) 40vw, 80vw"
               className="object-cover"
+              {...blurProps(w.src)}
             />
           </div>
         ))}

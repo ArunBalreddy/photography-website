@@ -8,10 +8,10 @@ const label =
 const bubble =
   "flex h-14 w-14 items-center justify-center rounded-full text-white shadow-lg shadow-black/40 transition-transform duration-300 group-hover:scale-110";
 
-/** Floating email (when site.email is set) + Instagram + WhatsApp buttons, bottom-right on every page. */
+/** Floating email (when site.email is set) + Instagram + WhatsApp buttons, bottom-right (tablet and up; phones get MobileBar). */
 export default function FloatingContact() {
   return (
-    <div className="fixed bottom-5 right-5 z-40 flex flex-col items-end gap-3 md:bottom-8 md:right-8">
+    <div className="fixed bottom-8 right-8 z-40 hidden flex-col items-end gap-3 md:flex">
       {site.email && (
         <a href={emailLink("Photoshoot enquiry")} aria-label="Email us" className="group flex items-center gap-3">
           <span className={label}>Email us</span>

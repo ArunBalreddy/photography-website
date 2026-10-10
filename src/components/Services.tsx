@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { blurProps } from "@/content/blur";
 import { services } from "@/content/site";
 import Reveal from "./Reveal";
 import SectionHeading from "./SectionHeading";
@@ -16,20 +17,21 @@ export default function Services() {
             <article
               className={`flex h-full flex-col border bg-surface ${s.featured ? "border-accent" : "border-line"}`}
             >
-              <div className="relative aspect-[4/3] overflow-hidden">
+              <Reveal variant="curtain" delay={i * 120 + 150} className="relative aspect-[4/3] overflow-hidden">
                 <Image
-                  src={s.image.startsWith("/") ? s.image : `${s.image}?w=900&q=75`}
+                  src={s.image}
                   alt=""
                   fill
-                  sizes="(min-width: 768px) 33vw, 100vw"
+                  sizes="(min-width: 1280px) 25vw, (min-width: 768px) 50vw, 100vw"
                   className="object-cover transition-transform duration-700 hover:scale-105"
+                  {...blurProps(s.image)}
                 />
                 {s.featured && (
                   <span className="absolute left-4 top-4 bg-accent px-3 py-1 text-[10px] uppercase tracking-[0.25em] text-background">
                     Most booked
                   </span>
                 )}
-              </div>
+              </Reveal>
               <div className="flex flex-1 flex-col p-8">
                 <h3 className="font-serif text-3xl">{s.name}</h3>
                 <p className="mt-3">

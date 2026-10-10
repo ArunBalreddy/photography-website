@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { blurProps } from "@/content/blur";
 import { useEffect, useRef, useState } from "react";
 import { showreel } from "@/content/site";
 
@@ -73,6 +74,7 @@ export default function Showreel() {
                 sizes="100vw"
                 style={{ objectPosition: item.position ?? "50% 40%" }}
                 className={`object-cover ${zoom ? "animate-[kenburns_8s_ease-out_forwards]" : ""}`}
+                {...blurProps(item.src)}
               />
             ) : (
               <video

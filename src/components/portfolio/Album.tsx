@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { blurProps } from "@/content/blur";
 import { useLayoutEffect, useRef, type PointerEvent } from "react";
 import { describe, type FolderData } from "./Folder";
 
@@ -76,6 +77,7 @@ export default function Album({
           <div key={work.id} data-tile className="break-inside-avoid">
             <button
               onClick={() => onOpenItem(i)}
+              data-cursor={work.kind === "photo" ? "View" : "Play"}
               onPointerMove={tilt}
               onPointerLeave={untilt}
               aria-label={`Open ${work.title}`}
@@ -88,6 +90,7 @@ export default function Album({
                 height={work.height}
                 sizes="(min-width: 1024px) 25vw, (min-width: 768px) 33vw, 50vw"
                 className="h-auto w-full"
+                {...blurProps(work.src)}
               />
               <span className="tile-glare pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
               {work.kind !== "photo" && (

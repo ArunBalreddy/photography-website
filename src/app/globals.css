@@ -68,6 +68,43 @@ body {
 @keyframes reel-progress { from { width: 0; } to { width: 100%; } }
 .reel-progress { animation: reel-progress linear forwards; }
 
+/* ── Intro (first visit per session) ─────────────────────────────────
+   The layout's inline script sets html[data-intro="seen"] before paint for repeat views. */
+@property --intro-sweep { syntax: "<angle>"; inherits: false; initial-value: 0deg; }
+html[data-intro="seen"] .intro { display: none; }
+.intro { animation: intro-out 0.9s cubic-bezier(0.76, 0, 0.24, 1) 1.8s forwards; }
+.intro-content { animation: intro-content-out 0.6s ease-in 1.65s forwards; }
+.intro-ring {
+  mask-image: conic-gradient(from -90deg, #000 var(--intro-sweep), transparent 0);
+  -webkit-mask-image: conic-gradient(from -90deg, #000 var(--intro-sweep), transparent 0);
+  animation: intro-sweep 1.25s cubic-bezier(0.65, 0, 0.35, 1) 0.1s both, intro-spin 2.6s ease-out both;
+}
+.intro-camera { animation: intro-pop 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.55s both; }
+.intro-word { animation: intro-letters 1s cubic-bezier(0.16, 1, 0.3, 1) 0.75s both; }
+.intro-by { animation: intro-pop 0.8s ease 1s both; }
+@keyframes intro-sweep { to { --intro-sweep: 360deg; } }
+@keyframes intro-spin { from { transform: rotate(-40deg); } to { transform: rotate(0deg); } }
+@keyframes intro-pop { from { opacity: 0; transform: scale(0.85); } }
+@keyframes intro-letters { from { opacity: 0; letter-spacing: 0.9em; } }
+@keyframes intro-out { to { transform: translateY(-100%); visibility: hidden; } }
+@keyframes intro-content-out { to { opacity: 0; transform: translateY(-30px); } }
+
+/* ── Hero entrance: lines rise out of masks, the rest fades up — after the intro if it's playing. */
+:root { --intro-delay: 0.15s; }
+html:not([data-intro="seen"]) { --intro-delay: 2.15s; }
+@keyframes hero-rise { from { transform: translateY(110%); } }
+@keyframes hero-fade { from { opacity: 0; transform: translateY(18px); } }
+.hero-line { animation: hero-rise 1.2s cubic-bezier(0.16, 1, 0.3, 1) calc(var(--intro-delay) + var(--d, 0s)) both; }
+.hero-fade { animation: hero-fade 1s ease calc(var(--intro-delay) + var(--d, 0s)) both; }
+.hero-caption { animation: hero-fade 0.7s ease both; }
+@keyframes scroll-cue { from { transform: translateY(-100%); } to { transform: translateY(200%); } }
+.scroll-cue { animation: scroll-cue 1.8s cubic-bezier(0.65, 0, 0.35, 1) infinite; }
+
+/* Desktop "View" cursor (CursorLabel.tsx) replaces the arrow over marked media. */
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  [data-cursor] { cursor: none; }
+}
+
 /* ── Portfolio folders ─────────────────────────────────────────────
    Back panel + tab, a pile of prints, and a front flap — all in one
    preserve-3d scene. Hover tilts the scene, swings the flap open and
@@ -130,9 +167,24 @@ body {
 .lightbox-next { animation: lb-next 0.7s cubic-bezier(0.16, 1, 0.3, 1) both; }
 .lightbox-prev { animation: lb-prev 0.7s cubic-bezier(0.16, 1, 0.3, 1) both; }
 
+/* Curtain reveal for photos: wipe up from the bottom while the image settles from a zoom. */
+.reveal-curtain {
+  clip-path: inset(100% 0 0 0);
+  transition: clip-path 1.2s cubic-bezier(0.77, 0, 0.18, 1);
+}
+.reveal-curtain img {
+  transform: scale(1.18);
+  transition: transform 1.8s cubic-bezier(0.2, 0.7, 0.2, 1), scale 0.7s ease;
+}
+.is-visible > .reveal-curtain { clip-path: inset(0 0 0 0); }
+.is-visible > .reveal-curtain img { transform: scale(1); }
+
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
+  .intro { display: none; }
   .reveal { opacity: 1; transform: none; transition: none; }
+  .reveal-curtain { clip-path: none; transition: none; }
+  .reveal-curtain img { transform: none; transition: none; }
   .folder-scene, .folder-paper, .folder-front, .tile { transition: none; }
   * { animation: none !important; }
 }
