@@ -9,6 +9,8 @@ export const site = {
   photographer: "Nikhil Sonu",
   location: "Hyderabad, India · Available worldwide",
   phone: "+91 81438 24214",
+  /** Studio email — powers "Email us" and "Book via Email". Leave empty to hide them. */
+  email: "",
   /** WhatsApp number, digits only with country code — bookings are sent here. */
   whatsapp: "918143824214",
   instagram: "https://www.instagram.com/__picturesque__1/",
@@ -24,6 +26,10 @@ export const site = {
 
 /** Click-to-chat link that opens WhatsApp with `text` pre-filled to the studio's number. */
 export const whatsappLink = (text: string) => `https://wa.me/${site.whatsapp}?text=${encodeURIComponent(text)}`;
+
+/** mailto: link that opens the visitor's mail app with subject and body pre-filled. */
+export const emailLink = (subject: string, body = "") =>
+  `mailto:${site.email}?subject=${encodeURIComponent(subject)}${body ? `&body=${encodeURIComponent(body)}` : ""}`;
 
 export const shootTypes = [
   "Wedding",

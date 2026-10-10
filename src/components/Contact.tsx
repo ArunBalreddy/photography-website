@@ -1,12 +1,13 @@
 "use client";
 
 import { useEffect, useRef, useState, type FormEvent } from "react";
-import { shootTypes, site, whatsappLink } from "@/content/site";
+import { emailLink, shootTypes, site, whatsappLink } from "@/content/site";
 import { formatShootDate, type Booking } from "@/lib/booking";
 import SectionHeading from "./SectionHeading";
 import Reveal from "./Reveal";
 import WhatsAppIcon from "./WhatsAppIcon";
 import InstagramIcon from "./InstagramIcon";
+import MailIcon from "./MailIcon";
 import SectionLogo from "./SectionLogo";
 
 const field =
@@ -20,11 +21,11 @@ function todayISO() {
   return new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
 }
 
-type Via = "whatsapp" | "instagram";
+type Via = "whatsapp" | "instagram" | "email";
 
 // Each booking does two things at once: /api/booking sends the studio an instant WhatsApp alert
 // (CallMeBot), and the visitor's chosen app opens so they can message the studio directly —
-// WhatsApp pre-filled, or an Instagram DM with the booking copied to paste (Instagram has no pre-fill).
+// WhatsApp or email pre-filled, or an Instagram DM with the booking copied to paste (Instagram has no pre-fill).
 export default function Contact() {
   const sectionRef = useRef<HTMLElement>(null);
   const [shoot, setShoot] = useState("");
@@ -49,8 +50,8 @@ export default function Contact() {
 
   function onSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    const via: Via =
-      (e.nativeEvent as SubmitEvent).submitter?.getAttribute("value") === "instagram" ? "instagram" : "whatsapp";
+    const chosen = (e.nativeEvent as SubmitEvent).submitter?.getAttribute("value");
+    const via: Via = chosen === "instagram" || chosen === "email" ? chosen : "whatsapp";
     const data = new FormData(e.currentTarget);
     const get = (k: string) => String(data.get(k) ?? "").trim();
     const booking: Booking & { website: string } = {
@@ -75,7 +76,7 @@ export default function Contact() {
       .then((res) => setAlerted(res.ok))
       .catch(() => {});
 
-    // WhatsApp renders *bold*; Instagram DMs don't, so keep those plain.
+    // WhatsApp renders *bold*; Instagram DMs and email don't, so keep those plain.
     const b = (label: string) => (via === "whatsapp" ? `*${label}:*` : `${label}:`);
     const text = [
       `Hi ${firstName}! I'd like to book a photoshoot 📸`,
@@ -91,13 +92,19 @@ export default function Contact() {
       .filter((line) => line !== null)
       .join("\n");
 
-    const link = via === "whatsapp" ? whatsappLink(text) : site.instagramDM;
+    const link =
+      via === "whatsapp"
+        ? whatsappLink(text)
+        : via === "email"
+          ? emailLink(`Photoshoot booking — ${booking.shoot}`, text)
+          : site.instagramDM;
     if (via === "instagram") {
       setCopied(false);
       navigator.clipboard?.writeText(text).then(() => setCopied(true), () => {});
     }
     setSent({ via, link, text });
-    if (!window.open(link, "_blank", "noopener")) window.location.href = link;
+    // mailto: hands off to the mail app; opening it in a new tab would leave a blank tab behind.
+    if (via === "email" || !window.open(link, "_blank", "noopener")) window.location.href = link;
   }
 
   function copyAgain() {
@@ -116,8 +123,8 @@ export default function Contact() {
         <SectionHeading eyebrow="Book a shoot" title="Let's make something worth keeping." />
         <Reveal delay={100}>
           <p className="mt-6 text-lg text-muted">
-            Pick what you&apos;d like to shoot and a date, then send your request to {site.photographer} on WhatsApp
-            or Instagram — whichever you prefer.
+            Pick what you&apos;d like to shoot and a date, then send your request to {site.photographer} on WhatsApp,
+            Instagram{site.email ? " or email" : ""} — whichever you prefer.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
             <a
@@ -138,6 +145,15 @@ export default function Contact() {
               <InstagramIcon className="h-4 w-4" />
               Message on Instagram
             </a>
+            {site.email && (
+              <a
+                href={emailLink("Photoshoot enquiry")}
+                className="inline-flex items-center gap-3 border border-accent/60 px-6 py-3 text-xs uppercase tracking-[0.25em] text-accent transition-colors hover:bg-accent hover:text-background"
+              >
+                <MailIcon className="h-4 w-4" />
+                Email us
+              </a>
+            )}
           </div>
           <dl className="mt-10 space-y-6 text-sm">
             <div>
@@ -156,6 +172,16 @@ export default function Contact() {
                 </a>
               </dd>
             </div>
+            {site.email && (
+              <div>
+                <dt className="text-xs uppercase tracking-[0.25em] text-accent">Email</dt>
+                <dd className="mt-1">
+                  <a href={emailLink("Photoshoot enquiry")} className="hover:text-accent">
+                    {site.email}
+                  </a>
+                </dd>
+              </div>
+            )}
             <div>
               <dt className="text-xs uppercase tracking-[0.25em] text-accent">Studio</dt>
               <dd className="mt-1">{site.location}</dd>
@@ -169,6 +195,8 @@ export default function Contact() {
           <div className="border border-line bg-surface p-10">
             {sent.via === "whatsapp" ? (
               <WhatsAppIcon className="h-10 w-10 text-[#25D366]" />
+            ) : sent.via === "email" ? (
+              <MailIcon className="h-10 w-10 text-accent" />
             ) : (
               <InstagramIcon className="h-10 w-10 text-[#E1306C]" />
             )}
@@ -182,6 +210,12 @@ export default function Contact() {
               <p className="mt-4 text-muted">
                 Your booking details are ready in WhatsApp — tap <strong className="text-foreground">Send</strong>{" "}
                 {alerted ? "there to chat with him directly." : "to confirm your request."}
+              </p>
+            ) : sent.via === "email" ? (
+              <p className="mt-4 text-muted">
+                Your booking email is ready in your mail app — tap <strong className="text-foreground">Send</strong>{" "}
+                {alerted ? "to email him directly." : "to confirm your request."} You can also write to{" "}
+                <span className="text-foreground">{site.email}</span>.
               </p>
             ) : (
               <>
@@ -198,13 +232,21 @@ export default function Contact() {
             <div className="mt-8 flex flex-wrap items-center gap-6">
               <a
                 href={sent.link}
-                target="_blank"
+                target={sent.via === "email" ? undefined : "_blank"}
                 rel="noreferrer"
                 className={`px-6 py-3 text-xs uppercase tracking-[0.25em] hover:bg-foreground hover:text-background ${
-                  sent.via === "whatsapp" ? "bg-[#25D366] text-background" : "bg-[#E1306C] text-foreground"
+                  sent.via === "whatsapp"
+                    ? "bg-[#25D366] text-background"
+                    : sent.via === "email"
+                      ? "bg-accent text-background"
+                      : "bg-[#E1306C] text-foreground"
                 }`}
               >
-                {sent.via === "whatsapp" ? "WhatsApp didn't open? Tap here" : "Open Instagram chat"}
+                {sent.via === "whatsapp"
+                  ? "WhatsApp didn't open? Tap here"
+                  : sent.via === "email"
+                    ? "Mail app didn't open? Tap here"
+                    : "Open Instagram chat"}
               </a>
               {sent.via === "instagram" && (
                 <button onClick={copyAgain} className="text-xs uppercase tracking-[0.25em] underline-offset-8 hover:underline">
@@ -311,6 +353,16 @@ export default function Contact() {
                 <InstagramIcon className="h-4 w-4" />
                 Book via Instagram
               </button>
+              {site.email && (
+                <button
+                  type="submit"
+                  value="email"
+                  className="inline-flex items-center gap-3 border border-accent px-8 py-4 text-xs uppercase tracking-[0.25em] text-accent transition-colors hover:bg-accent hover:text-background"
+                >
+                  <MailIcon className="h-4 w-4" />
+                  Book via Email
+                </button>
+              )}
             </div>
           </form>
         )}
