@@ -1,122 +1,108 @@
 "use client";
 
-import Image from "next/image";
-import { useCallback, useEffect, useState } from "react";
-import { categories, site, works, workUrl, type Category } from "@/content/site";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { site, works, type Category } from "@/content/site";
 import SectionHeading from "./SectionHeading";
+import Reveal from "./Reveal";
+import Folder, { type FolderData } from "./portfolio/Folder";
+import Album from "./portfolio/Album";
+import Lightbox, { type Direction } from "./portfolio/Lightbox";
 
-type Filter = "All" | "Films" | Category;
+const FOLDER_ORDER: Category[] = ["Weddings", "Kids", "Portraits", "Couples", "Food & Commercial"];
+const OPEN_DELAY_MS = 420; // let the flap swing open before the prints fly out
+const CLOSE_MS = 300;
 
-const PAGE = 16;
-const isFilm = (kind: string) => kind !== "photo";
-// Only offer filters that have something in them.
-const filters: Filter[] = ["All", ...categories.filter((c) => works.some((w) => w.category === c)), "Films"];
+// One folder per category, plus Films. A category with a single item (e.g. Maternity's one reel)
+// gets no folder of its own — it still lives in Films.
+const folders: FolderData[] = [
+  ...FOLDER_ORDER.map((c) => ({ key: c, title: c, items: works.filter((w) => w.category === c) })),
+  { key: "Films", title: "Films", items: works.filter((w) => w.kind !== "photo") },
+].filter((f) => f.items.length >= 2);
 
 export default function Gallery() {
-  const [filter, setFilter] = useState<Filter>("All");
-  const [shown, setShown] = useState(PAGE);
-  const [active, setActive] = useState<number | null>(null);
+  const [opening, setOpening] = useState<string | null>(null);
+  const [album, setAlbum] = useState<{ folder: FolderData; origin: DOMRect } | null>(null);
+  const [closing, setClosing] = useState(false);
+  const [lightbox, setLightbox] = useState<{ index: number; direction: Direction } | null>(null);
+  const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
 
-  const matching =
-    filter === "All"
-      ? works
-      : filter === "Films"
-        ? works.filter((w) => isFilm(w.kind))
-        : works.filter((w) => w.category === filter);
-  const visible = matching.slice(0, shown);
+  useEffect(() => () => clearTimeout(timer.current), []);
 
-  const close = useCallback(() => setActive(null), []);
+  const openFolder = (folder: FolderData, origin: DOMRect) => {
+    if (opening || album) return;
+    setOpening(folder.key);
+    timer.current = setTimeout(() => {
+      setAlbum({ folder, origin });
+      setOpening(null);
+      // A history entry so the phone's back button closes the folder instead of leaving the page.
+      history.pushState({ album: folder.key }, "");
+    }, OPEN_DELAY_MS);
+  };
+
+  const finishClose = useCallback(() => {
+    setLightbox(null);
+    setClosing(true);
+    clearTimeout(timer.current);
+    timer.current = setTimeout(() => {
+      setAlbum(null);
+      setClosing(false);
+    }, CLOSE_MS);
+  }, []);
+
+  const requestClose = useCallback(() => {
+    if (history.state?.album) history.back(); // popstate → finishClose
+    else finishClose();
+  }, [finishClose]);
+
   const step = useCallback(
-    (dir: 1 | -1) => setActive((i) => (i === null ? i : (i + dir + visible.length) % visible.length)),
-    [visible.length],
+    (dir: 1 | -1) =>
+      setLightbox((lb) =>
+        lb && album
+          ? { index: (lb.index + dir + album.folder.items.length) % album.folder.items.length, direction: dir === 1 ? "next" : "prev" }
+          : lb,
+      ),
+    [album],
   );
 
   useEffect(() => {
-    if (active === null) return;
+    if (!album) return;
+    const onPop = () => finishClose();
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") close();
-      if (e.key === "ArrowRight") step(1);
-      if (e.key === "ArrowLeft") step(-1);
+      if (e.key === "Escape") {
+        if (lightbox) setLightbox(null);
+        else requestClose();
+      }
+      if (lightbox && e.key === "ArrowRight") step(1);
+      if (lightbox && e.key === "ArrowLeft") step(-1);
     };
     document.body.style.overflow = "hidden";
+    window.addEventListener("popstate", onPop);
     window.addEventListener("keydown", onKey);
     return () => {
       document.body.style.overflow = "";
+      window.removeEventListener("popstate", onPop);
       window.removeEventListener("keydown", onKey);
     };
-  }, [active, close, step]);
-
-  const current = active === null ? null : visible[active];
-  const currentUrl = current && workUrl(current);
+  }, [album, lightbox, finishClose, requestClose, step]);
 
   return (
     <section id="work" className="mx-auto max-w-7xl px-6 py-28 md:py-36">
-      <div className="mb-14 flex flex-col justify-between gap-8 lg:flex-row lg:items-end">
+      <div className="mb-20 flex flex-col justify-between gap-6 md:flex-row md:items-end">
         <SectionHeading eyebrow="Selected work" title="Portfolio" />
-        <div className="flex flex-wrap gap-2" role="tablist" aria-label="Filter portfolio">
-          {filters.map((c) => (
-            <button
-              key={c}
-              role="tab"
-              aria-selected={filter === c}
-              onClick={() => {
-                setFilter(c);
-                setShown(PAGE);
-              }}
-              className={`border px-4 py-2 text-xs uppercase tracking-[0.2em] transition-colors ${
-                filter === c
-                  ? "border-accent bg-accent text-background"
-                  : "border-line text-foreground/70 hover:border-foreground/50 hover:text-foreground"
-              }`}
-            >
-              {c}
-            </button>
-          ))}
-        </div>
+        <Reveal>
+          <p className="max-w-sm text-muted">Open a folder to explore each collection.</p>
+        </Reveal>
       </div>
 
-      <div className="columns-2 gap-4 md:columns-3 lg:columns-4 [&>*]:mb-4">
-        {visible.map((work, i) => (
-          <button
-            key={work.id}
-            onClick={() => setActive(i)}
-            className="group relative block w-full break-inside-avoid overflow-hidden bg-surface text-left"
-            aria-label={`Open ${work.title}`}
-          >
-            <Image
-              src={work.src}
-              alt={work.alt}
-              width={work.width}
-              height={work.height}
-              sizes="(min-width: 1024px) 25vw, (min-width: 768px) 33vw, 50vw"
-              className="h-auto w-full transition-transform duration-700 group-hover:scale-105"
-            />
-            {isFilm(work.kind) && (
-              <span className="absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-full bg-black/60 backdrop-blur-sm">
-                <svg viewBox="0 0 24 24" className="ml-0.5 h-4 w-4 fill-foreground" aria-hidden>
-                  <path d="M8 5v14l11-7z" />
-                </svg>
-              </span>
-            )}
-            <div className="absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-black/80 via-transparent to-transparent p-5 opacity-0 transition-opacity duration-500 group-hover:opacity-100 group-focus-visible:opacity-100">
-              <span className="text-[10px] uppercase tracking-[0.3em] text-accent">
-                {isFilm(work.kind) ? `Film · ${work.category}` : work.category}
-              </span>
-              <span className="font-serif text-xl">{work.title}</span>
-            </div>
-          </button>
+      <div className="grid gap-x-10 gap-y-20 sm:grid-cols-2 lg:grid-cols-3">
+        {folders.map((folder, i) => (
+          <Reveal key={folder.key} delay={(i % 3) * 120}>
+            <Folder folder={folder} opening={opening === folder.key} onOpen={(rect) => openFolder(folder, rect)} />
+          </Reveal>
         ))}
       </div>
 
-      <div className="mt-14 flex flex-wrap items-center justify-center gap-4">
-        {shown < matching.length && (
-          <button
-            onClick={() => setShown((n) => n + PAGE)}
-            className="bg-foreground px-8 py-4 text-xs uppercase tracking-[0.25em] text-background transition-colors hover:bg-accent"
-          >
-            Show more ({matching.length - shown})
-          </button>
-        )}
+      <div className="mt-20 text-center">
         <a
           href={site.instagram}
           target="_blank"
@@ -127,76 +113,24 @@ export default function Gallery() {
         </a>
       </div>
 
-      {current && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/95 p-4 pb-24 md:p-12 md:pb-28"
-          role="dialog"
-          aria-modal="true"
-          aria-label={current.title}
-          onClick={close}
-        >
-          <div className="relative flex h-full w-full items-center justify-center" onClick={(e) => e.stopPropagation()}>
-            {current.kind === "reel" ? (
-              <iframe
-                key={current.id}
-                src={`https://www.instagram.com/reel/${current.id}/embed`}
-                title={current.title}
-                className="h-full max-h-[760px] w-full max-w-[400px] rounded bg-white"
-                allow="autoplay; encrypted-media; picture-in-picture"
-                allowFullScreen
-              />
-            ) : current.kind === "video" ? (
-              <video
-                key={current.id}
-                src={current.video}
-                poster={current.src}
-                controls
-                autoPlay
-                playsInline
-                className="h-full max-h-full w-auto max-w-full bg-black"
-              />
-            ) : (
-              <Image src={current.src} alt={current.alt} fill sizes="100vw" className="object-contain" />
-            )}
-          </div>
-          <div className="absolute bottom-6 left-1/2 w-max max-w-[90vw] -translate-x-1/2 text-center">
-            <p className="font-serif text-2xl">{current.title}</p>
-            <p className="text-[10px] uppercase tracking-[0.3em] text-muted">
-              {current.category} · {active! + 1} / {visible.length}
-              {currentUrl && (
-                <>
-                  {" · "}
-                  <a href={currentUrl} target="_blank" rel="noreferrer" className="text-accent hover:underline">
-                    View on Instagram
-                  </a>
-                </>
-              )}
-            </p>
-          </div>
-          <button onClick={close} aria-label="Close" className="absolute right-6 top-6 text-3xl font-light hover:text-accent">
-            ×
-          </button>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              step(-1);
-            }}
-            aria-label="Previous"
-            className="absolute left-2 top-1/2 -translate-y-1/2 p-4 text-4xl font-light hover:text-accent md:left-6"
-          >
-            ‹
-          </button>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              step(1);
-            }}
-            aria-label="Next"
-            className="absolute right-2 top-1/2 -translate-y-1/2 p-4 text-4xl font-light hover:text-accent md:right-6"
-          >
-            ›
-          </button>
-        </div>
+      {album && (
+        <Album
+          key={album.folder.key}
+          folder={album.folder}
+          origin={album.origin}
+          closing={closing}
+          onClose={requestClose}
+          onOpenItem={(index) => setLightbox({ index, direction: "open" })}
+        />
+      )}
+      {album && lightbox && (
+        <Lightbox
+          items={album.folder.items}
+          index={lightbox.index}
+          direction={lightbox.direction}
+          onClose={() => setLightbox(null)}
+          onStep={step}
+        />
       )}
     </section>
   );
