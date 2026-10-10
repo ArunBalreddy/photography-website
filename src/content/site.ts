@@ -159,18 +159,24 @@ export type ReelItem =
   | { type: "photo"; src: string; position?: string; duration: number }
   | { type: "video"; src: string; poster: string; start: number; duration: number };
 
-// About-section showreel: Nikhil's photos (slow zoom) cut with clips from his films. Seconds.
+// About-section showreel (plays behind the About text): food & beverage only — photos with a slow
+// zoom cut with food-only moments from the films (a film can appear more than once at different
+// `start`s; durations stop before non-food shots). `position` keeps the dish in the wide crop.
 export const showreel: ReelItem[] = [
-  { type: "photo", src: "/photos/couple-petals.jpg", position: "50% 40%", duration: 4 },
-  { type: "video", src: "/films/masala-pot.mp4", poster: "/films/masala-pot.jpg", start: 1, duration: 6 },
-  { type: "photo", src: "/photos/kids-blue-door.jpg", position: "50% 80%", duration: 4 },
-  { type: "photo", src: "/photos/wedding-garlands.jpg", position: "50% 45%", duration: 4 },
-  { type: "video", src: "/films/cafe-stories.mp4", poster: "/films/cafe-stories.jpg", start: 7, duration: 6 },
-  { type: "photo", src: "/photos/classical-pillar.jpg", position: "50% 30%", duration: 4 },
-  { type: "photo", src: "/photos/baby-temple-steps.jpg", position: "50% 62%", duration: 4 },
-  { type: "video", src: "/films/glimpse.mp4", poster: "/films/glimpse.jpg", start: 0, duration: 7 },
-  { type: "photo", src: "/photos/bride-groom-smile.jpg", position: "50% 42%", duration: 4 },
-  { type: "photo", src: "/photos/kids-traditional-set.jpg", position: "45% 50%", duration: 4 },
+  { type: "photo", src: "/photos/ketel-one-bar.jpg", position: "50% 62%", duration: 4 },
+  { type: "video", src: "/films/masala-pot.mp4", poster: "/films/masala-pot.jpg", start: 0, duration: 3 },
+  { type: "photo", src: "/photos/masala-pot-smoke.jpg", position: "50% 58%", duration: 4 },
+  { type: "photo", src: "/photos/flaming-leg-pieces.jpg", position: "50% 62%", duration: 4 },
+  { type: "video", src: "/films/glimpse.mp4", poster: "/films/glimpse.jpg", start: 0, duration: 5 },
+  { type: "photo", src: "/photos/talisker.jpg", position: "50% 62%", duration: 4 },
+  { type: "photo", src: "/photos/masala-pot-green.jpg", position: "50% 55%", duration: 4 },
+  { type: "video", src: "/films/cafe-stories.mp4", poster: "/films/cafe-stories.jpg", start: 8, duration: 2.5 },
+  { type: "photo", src: "/photos/broccoli-feast.jpg", position: "50% 52%", duration: 4 },
+  { type: "video", src: "/films/masala-pot.mp4", poster: "/films/masala-pot.jpg", start: 8, duration: 3.5 },
+  { type: "photo", src: "/photos/ketel-one-garden.jpg", position: "50% 60%", duration: 4 },
+  { type: "photo", src: "/photos/masala-pot-grill.jpg", position: "50% 62%", duration: 4 },
+  { type: "video", src: "/films/glimpse.mp4", poster: "/films/glimpse.jpg", start: 8, duration: 4 },
+  { type: "photo", src: "/photos/smoke-and-spice.jpg", position: "50% 50%", duration: 4 },
 ];
 
 export const about = {

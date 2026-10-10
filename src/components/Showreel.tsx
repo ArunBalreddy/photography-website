@@ -60,7 +60,8 @@ export default function Showreel() {
         const zoom = running && (i === index || i === prev);
         return (
           <div
-            key={item.src}
+            // index keys: the same film can appear more than once at different start times
+            key={i}
             aria-hidden
             className={`absolute inset-0 transition-opacity duration-1000 ${i === index ? "opacity-100" : "opacity-0"}`}
           >
@@ -103,7 +104,7 @@ export default function Showreel() {
       <div className="absolute inset-x-0 bottom-8">
         <div className="mx-auto flex max-w-7xl gap-1.5 px-6">
           {showreel.map((item, i) => (
-            <span key={item.src} className="h-0.5 flex-1 overflow-hidden rounded-full bg-foreground/25">
+            <span key={i} className="h-0.5 flex-1 overflow-hidden rounded-full bg-foreground/25">
               <span
                 // re-keyed per turn so the active bar restarts from empty
                 key={i === index ? `active-${index}-${prev}` : "idle"}
