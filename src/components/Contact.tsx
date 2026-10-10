@@ -14,6 +14,9 @@ const field =
   "w-full border-b border-line bg-transparent py-3 text-foreground placeholder:text-muted/60 focus:border-accent focus:outline-none";
 
 const firstName = site.photographer.split(" ")[0];
+const bookBtn =
+  "inline-flex w-full items-center justify-center gap-3 whitespace-nowrap border px-4 py-5 text-sm font-medium uppercase tracking-[0.2em] transition-colors md:py-4 md:text-xs";
+const bookIcon = "h-5 w-5 md:h-4 md:w-4";
 const timeSlots = ["Morning", "Afternoon", "Evening / Golden hour", "Full day", "Not sure yet"];
 
 function todayISO() {
@@ -336,34 +339,34 @@ export default function Contact() {
               aria-hidden
               className="absolute -left-[9999px] h-px w-px opacity-0"
             />
-            <div className="flex flex-wrap gap-4 sm:col-span-2">
-              <button
-                type="submit"
-                value="whatsapp"
-                className="inline-flex items-center gap-3 bg-[#25D366] px-8 py-4 text-xs uppercase tracking-[0.25em] text-background transition-colors hover:bg-foreground"
-              >
-                <WhatsAppIcon className="h-4 w-4" />
-                Book on WhatsApp
-              </button>
-              <button
-                type="submit"
-                value="instagram"
-                className="inline-flex items-center gap-3 border border-[#E1306C] px-8 py-4 text-xs uppercase tracking-[0.25em] text-[#E1306C] transition-colors hover:bg-[#E1306C] hover:text-foreground"
-              >
-                <InstagramIcon className="h-4 w-4" />
-                Book via Instagram
-              </button>
-              {site.email && (
+            {/* One row of equal buttons from tablet up; big full-width stacked buttons on phones. */}
+            <fieldset className="sm:col-span-2">
+              <legend className="mb-4 text-xs uppercase tracking-[0.25em] text-accent">Send your booking via</legend>
+              <div className="grid gap-3 md:auto-cols-fr md:grid-flow-col">
+                <button type="submit" value="whatsapp" className={`${bookBtn} border-[#25D366] bg-[#25D366] text-background hover:border-foreground hover:bg-foreground`}>
+                  <WhatsAppIcon className={bookIcon} />
+                  WhatsApp
+                </button>
                 <button
                   type="submit"
-                  value="email"
-                  className="inline-flex items-center gap-3 border border-accent px-8 py-4 text-xs uppercase tracking-[0.25em] text-accent transition-colors hover:bg-accent hover:text-background"
+                  value="instagram"
+                  className={`${bookBtn} border-[#E1306C] text-[#E1306C] hover:bg-[#E1306C] hover:text-foreground`}
                 >
-                  <MailIcon className="h-4 w-4" />
-                  Book via Email
+                  <InstagramIcon className={bookIcon} />
+                  Instagram
                 </button>
-              )}
-            </div>
+                {site.email && (
+                  <button
+                    type="submit"
+                    value="email"
+                    className={`${bookBtn} border-accent text-accent hover:bg-accent hover:text-background`}
+                  >
+                    <MailIcon className={bookIcon} />
+                    Email
+                  </button>
+                )}
+              </div>
+            </fieldset>
           </form>
         )}
       </Reveal>
