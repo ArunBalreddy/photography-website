@@ -64,6 +64,10 @@ body {
   .logo-drift { animation: logo-drift linear both; animation-timeline: view(); }
 }
 
+/* About showreel: story-style progress bar for the active item. */
+@keyframes reel-progress { from { width: 0; } to { width: 100%; } }
+.reel-progress { animation: reel-progress linear forwards; }
+
 /* ── Portfolio folders ─────────────────────────────────────────────
    Back panel + tab, a pile of prints, and a front flap — all in one
    preserve-3d scene. Hover tilts the scene, swings the flap open and

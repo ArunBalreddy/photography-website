@@ -1,7 +1,7 @@
-import Image from "next/image";
 import { about, site } from "@/content/site";
 import Reveal from "./Reveal";
 import SectionLogo from "./SectionLogo";
+import Showreel from "./Showreel";
 
 export default function About() {
   return (
@@ -9,13 +9,7 @@ export default function About() {
       <SectionLogo side="right" align="center" />
       <div className="mx-auto grid max-w-7xl items-center gap-16 px-6 py-28 md:grid-cols-2 md:py-36">
         <Reveal className="relative aspect-[4/5] overflow-hidden">
-          <Image
-            src={`${about.image}?w=1200&q=80`}
-            alt={`${site.photographer} with camera`}
-            fill
-            sizes="(min-width: 768px) 50vw, 100vw"
-            className="object-cover"
-          />
+          <Showreel />
         </Reveal>
 
         <div>

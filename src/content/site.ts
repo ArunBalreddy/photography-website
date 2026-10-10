@@ -1,7 +1,5 @@
 // All editable site content lives here — swap names, copy, and photos without touching components.
 
-const unsplash = (id: string) => `https://images.unsplash.com/photo-${id}`;
-
 export const site = {
   name: "PICTURESQUE",
   fullName: "PICTURESQUE by Nikhil Sonu",
@@ -157,8 +155,25 @@ export const works: Work[] = [
 
 export const workUrl = (w: Work) => (w.kind === "reel" ? `https://www.instagram.com/reel/${w.id}/` : null);
 
+export type ReelItem =
+  | { type: "photo"; src: string; position?: string; duration: number }
+  | { type: "video"; src: string; poster: string; start: number; duration: number };
+
+// About-section showreel: Nikhil's photos (slow zoom) cut with clips from his films. Seconds.
+export const showreel: ReelItem[] = [
+  { type: "photo", src: "/photos/couple-petals.jpg", duration: 4 },
+  { type: "video", src: "/films/masala-pot.mp4", poster: "/films/masala-pot.jpg", start: 1, duration: 6 },
+  { type: "photo", src: "/photos/kids-blue-door.jpg", duration: 4 },
+  { type: "photo", src: "/photos/wedding-garlands.jpg", duration: 4 },
+  { type: "video", src: "/films/cafe-stories.mp4", poster: "/films/cafe-stories.jpg", start: 7, duration: 6 },
+  { type: "photo", src: "/photos/classical-pillar.jpg", duration: 4 },
+  { type: "photo", src: "/photos/baby-temple-steps.jpg", duration: 4 },
+  { type: "video", src: "/films/glimpse.mp4", poster: "/films/glimpse.jpg", start: 0, duration: 7 },
+  { type: "photo", src: "/photos/bride-groom-smile.jpg", duration: 4 },
+  { type: "photo", src: "/photos/kids-traditional-set.jpg", position: "45% 50%", duration: 4 },
+];
+
 export const about = {
-  image: unsplash("1452587925148-ce544e77e70d"),
   heading: "I chase the in-between moments.",
   body: [
     "For over a decade I've photographed weddings, people, and places across India and beyond. My work is quiet, honest, and rooted in natural light — less posing, more presence.",
