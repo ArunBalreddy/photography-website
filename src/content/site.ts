@@ -108,7 +108,7 @@ export const works: Work[] = [
   photo("kids-traditional-set", "Kids", "Little Traditions", "Little girl in a silk langa playing in a village-style set", 2000, 1333),
   photo("classical-parrot", "Portraits", "The Parrot & the Lotus", "Classical dancer holding a parrot and a lotus", 1333, 2000),
   photo("wedding-rituals", "Weddings", "The Sacred Fire", "Bride and groom seated together during the wedding rituals", 1136, 2000),
-  reel("Dbs2DimycCx", "Maternity", "Seemantham", "Couple at a traditional seemantham ceremony", 360, 640),
+  reel("Dbs2DimycCx", "Maternity", "Maternity", "Couple at a traditional seemantham ceremony", 360, 640),
   photo("flaming-leg-pieces", "Food & Commercial", "Flaming Leg Pieces", "Gloved hand holding smoking chicken skewers", 1153, 2000),
   photo("baby-telephone", "Kids", "Pink Telephone", "Baby in a pink dress sitting by a pink telephone booth", 1333, 2000),
   photo("bride-coconut", "Weddings", "The Bride", "Bride in a red silk saree holding a decorated coconut", 1333, 2000),
