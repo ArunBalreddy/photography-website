@@ -161,15 +161,15 @@ export type ReelItem =
 
 // About-section showreel: Nikhil's photos (slow zoom) cut with clips from his films. Seconds.
 export const showreel: ReelItem[] = [
-  { type: "photo", src: "/photos/couple-petals.jpg", duration: 4 },
+  { type: "photo", src: "/photos/couple-petals.jpg", position: "50% 40%", duration: 4 },
   { type: "video", src: "/films/masala-pot.mp4", poster: "/films/masala-pot.jpg", start: 1, duration: 6 },
-  { type: "photo", src: "/photos/kids-blue-door.jpg", duration: 4 },
-  { type: "photo", src: "/photos/wedding-garlands.jpg", duration: 4 },
+  { type: "photo", src: "/photos/kids-blue-door.jpg", position: "50% 80%", duration: 4 },
+  { type: "photo", src: "/photos/wedding-garlands.jpg", position: "50% 45%", duration: 4 },
   { type: "video", src: "/films/cafe-stories.mp4", poster: "/films/cafe-stories.jpg", start: 7, duration: 6 },
-  { type: "photo", src: "/photos/classical-pillar.jpg", duration: 4 },
-  { type: "photo", src: "/photos/baby-temple-steps.jpg", duration: 4 },
+  { type: "photo", src: "/photos/classical-pillar.jpg", position: "50% 30%", duration: 4 },
+  { type: "photo", src: "/photos/baby-temple-steps.jpg", position: "50% 62%", duration: 4 },
   { type: "video", src: "/films/glimpse.mp4", poster: "/films/glimpse.jpg", start: 0, duration: 7 },
-  { type: "photo", src: "/photos/bride-groom-smile.jpg", duration: 4 },
+  { type: "photo", src: "/photos/bride-groom-smile.jpg", position: "50% 42%", duration: 4 },
   { type: "photo", src: "/photos/kids-traditional-set.jpg", position: "45% 50%", duration: 4 },
 ];
 

@@ -5,8 +5,9 @@ import { useEffect, useRef, useState } from "react";
 import { showreel } from "@/content/site";
 
 /**
- * Crossfading showreel of photos (slow zoom) and muted film clips, with story-style progress.
- * Plays only while on screen; reduced-motion visitors get the first frame, still.
+ * Full-bleed section background: crossfading photos (slow zoom) and muted film clips, darkened
+ * on the text side, with a story-style progress bar. Plays only while on screen; reduced-motion
+ * visitors get the first frame, still.
  */
 export default function Showreel() {
   const rootRef = useRef<HTMLDivElement>(null);
@@ -55,22 +56,21 @@ export default function Showreel() {
       className="absolute inset-0 bg-black"
     >
       {showreel.map((item, i) => {
-        const shown = i === index;
         // Zoom the incoming photo and let the outgoing one keep its zoom while it fades.
         const zoom = running && (i === index || i === prev);
         return (
           <div
             key={item.src}
             aria-hidden
-            className={`absolute inset-0 transition-opacity duration-1000 ${shown ? "opacity-100" : "opacity-0"}`}
+            className={`absolute inset-0 transition-opacity duration-1000 ${i === index ? "opacity-100" : "opacity-0"}`}
           >
             {item.type === "photo" ? (
               <Image
                 src={item.src}
                 alt=""
                 fill
-                sizes="(min-width: 768px) 50vw, 100vw"
-                style={{ objectPosition: item.position }}
+                sizes="100vw"
+                style={{ objectPosition: item.position ?? "50% 40%" }}
                 className={`object-cover ${zoom ? "animate-[kenburns_8s_ease-out_forwards]" : ""}`}
               />
             ) : (
@@ -91,24 +91,30 @@ export default function Showreel() {
         );
       })}
 
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/60 to-transparent" />
-      <p className="absolute left-5 top-5 flex items-center gap-2 text-[10px] uppercase tracking-[0.3em] text-foreground/90">
+      {/* Legibility: an even dim on phones; on wider screens dark where the text sits, clear on the right. */}
+      <div className="absolute inset-0 bg-background/70 md:bg-transparent md:bg-gradient-to-r md:from-background/95 md:via-background/70 md:to-background/10" />
+      <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-background/70 to-transparent" />
+      <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-background/90 to-transparent" />
+
+      <p className="absolute right-6 top-8 flex items-center gap-2 text-[10px] uppercase tracking-[0.3em] text-foreground/90 md:right-10">
         <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-accent" />
         Showreel
       </p>
-      <div className="absolute inset-x-5 bottom-5 flex gap-1.5">
-        {showreel.map((item, i) => (
-          <span key={item.src} className="h-0.5 flex-1 overflow-hidden rounded-full bg-foreground/25">
-            <span
-              // re-keyed per turn so the active bar restarts from empty
-              key={i === index ? `active-${index}-${prev}` : "idle"}
-              className={`block h-full bg-foreground ${
-                i < index ? "w-full" : i === index && running ? "reel-progress" : "w-0"
-              }`}
-              style={i === index ? { animationDuration: `${item.duration}s` } : undefined}
-            />
-          </span>
-        ))}
+      <div className="absolute inset-x-0 bottom-8">
+        <div className="mx-auto flex max-w-7xl gap-1.5 px-6">
+          {showreel.map((item, i) => (
+            <span key={item.src} className="h-0.5 flex-1 overflow-hidden rounded-full bg-foreground/25">
+              <span
+                // re-keyed per turn so the active bar restarts from empty
+                key={i === index ? `active-${index}-${prev}` : "idle"}
+                className={`block h-full bg-foreground ${
+                  i < index ? "w-full" : i === index && running ? "reel-progress" : "w-0"
+                }`}
+                style={i === index ? { animationDuration: `${item.duration}s` } : undefined}
+              />
+            </span>
+          ))}
+        </div>
       </div>
     </div>
   );
