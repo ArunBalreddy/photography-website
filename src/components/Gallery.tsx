@@ -91,7 +91,7 @@ export default function Gallery() {
     <section id="work" className="relative isolate mx-auto max-w-7xl px-6 py-28 md:py-36">
       <SectionLogo side="right" align="top" />
       <div className="mb-20 flex flex-col justify-between gap-6 md:flex-row md:items-end">
-        <SectionHeading eyebrow="Selected work" title="Portfolio" />
+        <SectionHeading eyebrow="Selected work" title="My Gallery" />
         <Reveal>
           <p className="max-w-sm text-muted">Open a folder to explore each collection.</p>
         </Reveal>

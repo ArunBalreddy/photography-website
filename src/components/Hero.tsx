@@ -46,7 +46,7 @@ export default function Hero() {
             href="#work"
             className="bg-foreground px-8 py-4 text-xs uppercase tracking-[0.25em] text-background transition-colors hover:bg-accent"
           >
-            View portfolio
+            View gallery
           </a>
           <a href="#contact" className="text-xs uppercase tracking-[0.25em] underline-offset-8 hover:underline">
             Check availability →
