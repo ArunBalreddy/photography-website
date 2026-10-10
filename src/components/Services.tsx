@@ -2,10 +2,12 @@ import Image from "next/image";
 import { services } from "@/content/site";
 import Reveal from "./Reveal";
 import SectionHeading from "./SectionHeading";
+import SectionLogo from "./SectionLogo";
 
 export default function Services() {
   return (
-    <section id="services" className="mx-auto max-w-7xl px-6 py-28 md:py-36">
+    <section id="services" className="relative isolate mx-auto max-w-7xl px-6 py-28 md:py-36">
+      <SectionLogo side="left" />
       <SectionHeading eyebrow="Services & pricing" title="Ways to work together" className="mb-16 text-center" />
 
       <div className="grid gap-8 md:grid-cols-2 xl:grid-cols-4">

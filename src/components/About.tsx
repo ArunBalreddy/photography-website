@@ -1,10 +1,12 @@
 import Image from "next/image";
 import { about, site } from "@/content/site";
 import Reveal from "./Reveal";
+import SectionLogo from "./SectionLogo";
 
 export default function About() {
   return (
-    <section id="about" className="border-y border-line bg-surface">
+    <section id="about" className="relative isolate border-y border-line bg-surface">
+      <SectionLogo side="right" />
       <div className="mx-auto grid max-w-7xl items-center gap-16 px-6 py-28 md:grid-cols-2 md:py-36">
         <Reveal className="relative aspect-[4/5] overflow-hidden">
           <Image

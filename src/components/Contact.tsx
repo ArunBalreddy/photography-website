@@ -7,6 +7,7 @@ import SectionHeading from "./SectionHeading";
 import Reveal from "./Reveal";
 import WhatsAppIcon from "./WhatsAppIcon";
 import InstagramIcon from "./InstagramIcon";
+import SectionLogo from "./SectionLogo";
 
 const field =
   "w-full border-b border-line bg-transparent py-3 text-foreground placeholder:text-muted/60 focus:border-accent focus:outline-none";
@@ -108,8 +109,9 @@ export default function Contact() {
     <section
       ref={sectionRef}
       id="contact"
-      className="mx-auto grid max-w-7xl scroll-mt-20 gap-16 px-6 py-28 md:py-36 lg:grid-cols-[1fr_1.4fr]"
+      className="relative isolate mx-auto grid max-w-7xl scroll-mt-20 gap-16 px-6 py-28 md:py-36 lg:grid-cols-[1fr_1.4fr]"
     >
+      <SectionLogo side="left" />
       <div>
         <SectionHeading eyebrow="Book a shoot" title="Let's make something worth keeping." />
         <Reveal delay={100}>

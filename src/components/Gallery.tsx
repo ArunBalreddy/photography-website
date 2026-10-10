@@ -1,12 +1,14 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { site, works, type Category } from "@/content/site";
 import SectionHeading from "./SectionHeading";
 import Reveal from "./Reveal";
 import Folder, { type FolderData } from "./portfolio/Folder";
 import Album from "./portfolio/Album";
 import Lightbox, { type Direction } from "./portfolio/Lightbox";
+import SectionLogo from "./SectionLogo";
 
 const FOLDER_ORDER: Category[] = ["Weddings", "Kids", "Portraits", "Couples", "Food & Commercial"];
 const OPEN_DELAY_MS = 420; // let the flap swing open before the prints fly out
@@ -86,7 +88,8 @@ export default function Gallery() {
   }, [album, lightbox, finishClose, requestClose, step]);
 
   return (
-    <section id="work" className="mx-auto max-w-7xl px-6 py-28 md:py-36">
+    <section id="work" className="relative isolate mx-auto max-w-7xl px-6 py-28 md:py-36">
+      <SectionLogo side="right" />
       <div className="mb-20 flex flex-col justify-between gap-6 md:flex-row md:items-end">
         <SectionHeading eyebrow="Selected work" title="Portfolio" />
         <Reveal>
@@ -113,25 +116,31 @@ export default function Gallery() {
         </a>
       </div>
 
-      {album && (
-        <Album
-          key={album.folder.key}
-          folder={album.folder}
-          origin={album.origin}
-          closing={closing}
-          onClose={requestClose}
-          onOpenItem={(index) => setLightbox({ index, direction: "open" })}
-        />
-      )}
-      {album && lightbox && (
-        <Lightbox
-          items={album.folder.items}
-          index={lightbox.index}
-          direction={lightbox.direction}
-          onClose={() => setLightbox(null)}
-          onStep={step}
-        />
-      )}
+      {/* Rendered at page level so the section's stacking context (needed for the watermark)
+          can't trap the overlays beneath the fixed header. */}
+      {album &&
+        createPortal(
+          <>
+            <Album
+              key={album.folder.key}
+              folder={album.folder}
+              origin={album.origin}
+              closing={closing}
+              onClose={requestClose}
+              onOpenItem={(index) => setLightbox({ index, direction: "open" })}
+            />
+            {lightbox && (
+              <Lightbox
+                items={album.folder.items}
+                index={lightbox.index}
+                direction={lightbox.direction}
+                onClose={() => setLightbox(null)}
+                onStep={step}
+              />
+            )}
+          </>,
+          document.body,
+        )}
     </section>
   );
 }

@@ -50,6 +50,10 @@ body {
   transform: none;
 }
 
+/* Brand watermark: the brush ring turns slowly behind section content. */
+@keyframes logo-turn { to { transform: rotate(360deg); } }
+.logo-turn { animation: logo-turn 140s linear infinite; }
+
 /* ── Portfolio folders ─────────────────────────────────────────────
    Back panel + tab, a pile of prints, and a front flap — all in one
    preserve-3d scene. Hover tilts the scene, swings the flap open and
