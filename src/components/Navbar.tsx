@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { emailLink, nav, site, whatsappLink } from "@/content/site";
 import InstagramIcon from "./InstagramIcon";
@@ -87,12 +88,17 @@ export default function Navbar() {
         } ${scrolled || open ? "border-b border-line bg-background/90 backdrop-blur-md" : "border-b border-transparent bg-transparent"}`}
       >
         <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-6">
-          <a href="#top" aria-label={site.fullName} onClick={() => setOpen(false)}>
+          <a href="#top" aria-label={site.fullName} onClick={() => setOpen(false)} className="flex items-center gap-2.5 md:gap-3">
+            {/* logo mark: the brush ring turns slowly around the camera */}
+            <span aria-hidden className="relative aspect-square w-9 shrink-0 sm:w-11 md:w-14 lg:w-11 xl:w-14">
+              <Image src="/brand/logo-ring.png" alt="" fill sizes="56px" className="logo-turn-header" />
+              <Image src="/brand/logo-camera.png" alt="" fill sizes="56px" />
+            </span>
             <span className="flex flex-col leading-none">
-              <span className="font-serif text-[clamp(1.375rem,7.2vw,1.875rem)] font-semibold tracking-[0.2em] md:text-4xl lg:text-3xl xl:text-4xl">
+              <span className="font-serif text-[clamp(1.2rem,6vw,1.75rem)] font-semibold tracking-[0.2em] md:text-4xl lg:text-2xl xl:text-4xl">
                 {site.name}
               </span>
-              <span className="mt-1 font-serif text-[17px] font-medium italic text-accent md:text-xl lg:text-lg xl:text-xl">
+              <span className="mt-1 font-serif text-[clamp(0.85rem,4vw,1.0625rem)] font-medium italic text-accent md:text-xl lg:text-base xl:text-xl">
                 by {site.photographer}
               </span>
             </span>

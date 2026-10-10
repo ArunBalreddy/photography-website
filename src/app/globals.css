@@ -56,6 +56,7 @@ body {
    drifts and tilts as its section scrolls past (where scroll-driven animations exist). */
 @keyframes logo-turn { to { transform: rotate(360deg); } }
 .logo-turn { animation: logo-turn 140s linear infinite; }
+.logo-turn-header { animation: logo-turn 40s linear infinite; }
 @keyframes logo-drift {
   from { transform: translateY(-10%) rotate(-12deg); }
   to { transform: translateY(10%) rotate(12deg); }
