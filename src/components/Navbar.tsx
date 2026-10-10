@@ -23,12 +23,12 @@ export default function Navbar() {
       <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-6">
         <a href="#top" aria-label={site.fullName}>
           <span className="flex flex-col leading-none">
-            <span className="font-serif text-2xl tracking-[0.2em]">{site.name}</span>
-            <span className="mt-1 font-serif text-sm italic text-accent">by {site.photographer}</span>
+            <span className="font-serif text-[clamp(1.25rem,6.8vw,1.625rem)] tracking-[0.2em] md:text-3xl">{site.name}</span>
+            <span className="mt-1 font-serif text-base italic text-accent md:text-lg">by {site.photographer}</span>
           </span>
         </a>
 
-        <nav className="hidden gap-10 lg:flex">
+        <nav className="hidden gap-6 lg:flex xl:gap-10">
           {nav.map((item) => (
             <a
               key={item.href}

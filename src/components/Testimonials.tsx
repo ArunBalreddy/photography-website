@@ -6,7 +6,7 @@ import SectionLogo from "./SectionLogo";
 export default function Testimonials() {
   return (
     <section id="testimonials" className="relative isolate border-y border-line bg-surface">
-      <SectionLogo side="right" />
+      <SectionLogo side="right" align="bottom" />
       <div className="mx-auto max-w-7xl px-6 py-28 md:py-36">
         <SectionHeading eyebrow="Kind words" title="From the people in the frame" className="mb-16" />
         <div className="grid gap-12 md:grid-cols-3">

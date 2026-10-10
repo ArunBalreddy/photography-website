@@ -7,7 +7,7 @@ import SectionLogo from "./SectionLogo";
 export default function Services() {
   return (
     <section id="services" className="relative isolate mx-auto max-w-7xl px-6 py-28 md:py-36">
-      <SectionLogo side="left" />
+      <SectionLogo side="left" align="center" />
       <SectionHeading eyebrow="Services & pricing" title="Ways to work together" className="mb-16 text-center" />
 
       <div className="grid gap-8 md:grid-cols-2 xl:grid-cols-4">
