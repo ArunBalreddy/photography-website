@@ -8,7 +8,7 @@ export const site = {
   location: "Hyderabad, India · Available worldwide",
   phone: "+91 81438 24214",
   /** Studio email — powers "Email us" and "Book via Email". Leave empty to hide them. */
-  email: "",
+  email: "sambursonu@gmail.com",
   /** WhatsApp number, digits only with country code — bookings are sent here. */
   whatsapp: "918143824214",
   instagram: "https://www.instagram.com/__picturesque__1/",
