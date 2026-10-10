@@ -184,7 +184,7 @@ export const services = [
     featured: true,
   },
   {
-    name: "Maternity & Seemantham",
+    name: "Maternity",
     price: "₹25,000",
     unit: "per session",
     image: "/instagram/Dbs2DimycCx.jpg",
