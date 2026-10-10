@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { shootTypes, site, whatsappLink } from "@/content/site";
+import { formatShootDate, type Booking } from "@/lib/booking";
 import SectionHeading from "./SectionHeading";
 import Reveal from "./Reveal";
 import WhatsAppIcon from "./WhatsAppIcon";
@@ -17,21 +18,13 @@ function todayISO() {
   return new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
 }
 
-function formatDate(value: string) {
-  const [y, m, d] = value.split("-").map(Number);
-  return new Date(y, m - 1, d).toLocaleDateString("en-IN", {
-    weekday: "short",
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  });
-}
-
-// No backend: the booking opens in the visitor's WhatsApp, pre-filled and addressed to the studio.
+// Each booking does two things at once: /api/booking sends the studio an instant WhatsApp alert
+// (CallMeBot), and the visitor's own WhatsApp opens pre-filled so they can chat directly.
 export default function Contact() {
   const sectionRef = useRef<HTMLElement>(null);
   const [shoot, setShoot] = useState("");
   const [sentLink, setSentLink] = useState<string | null>(null);
+  const [alerted, setAlerted] = useState(false);
 
   useEffect(() => {
     // "Book this" buttons elsewhere link to #book=<shoot type> to preselect it here.
@@ -40,6 +33,7 @@ export default function Contact() {
       const type = decodeURIComponent(location.hash.slice("#book=".length));
       if (shootTypes.includes(type)) setShoot(type);
       setSentLink(null);
+      setAlerted(false);
       history.replaceState(null, "", "#contact");
       sectionRef.current?.scrollIntoView({ behavior: "smooth" });
     };
@@ -52,12 +46,33 @@ export default function Contact() {
     e.preventDefault();
     const data = new FormData(e.currentTarget);
     const get = (k: string) => String(data.get(k) ?? "").trim();
+    const booking: Booking & { website: string } = {
+      shoot: get("shoot"),
+      date: get("date"),
+      time: get("time"),
+      location: get("location"),
+      name: get("name"),
+      phone: get("phone"),
+      message: get("message"),
+      website: get("website"),
+    };
+
+    setAlerted(false);
+    // keepalive lets the alert finish even if WhatsApp replaces this page on mobile.
+    fetch("/api/booking", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(booking),
+      keepalive: true,
+    })
+      .then((res) => setAlerted(res.ok))
+      .catch(() => {});
 
     const lines = [
       `Hi ${firstName}! I'd like to book a photoshoot 📸`,
       "",
       `*Shoot:* ${get("shoot")}`,
-      `*Date:* ${formatDate(get("date"))}`,
+      `*Date:* ${formatShootDate(get("date"))}`,
       `*Time:* ${get("time")}`,
       get("location") ? `*Location:* ${get("location")}` : null,
       `*Name:* ${get("name")}`,
@@ -121,11 +136,25 @@ export default function Contact() {
         {sentLink ? (
           <div className="border border-line bg-surface p-10">
             <WhatsAppIcon className="h-10 w-10 text-[#25D366]" />
-            <h3 className="mt-6 font-serif text-4xl">Almost done!</h3>
-            <p className="mt-4 text-muted">
-              Your booking details are ready in WhatsApp — just tap <strong className="text-foreground">Send</strong>{" "}
-              to confirm your request. {site.photographer} will reply on WhatsApp to confirm availability.
-            </p>
+            {alerted ? (
+              <>
+                <h3 className="mt-6 font-serif text-4xl">Request sent!</h3>
+                <p className="mt-4 text-muted">
+                  {firstName} has received your booking and will reply on WhatsApp to confirm availability. WhatsApp
+                  is open too — tap <strong className="text-foreground">Send</strong> there if you&apos;d like to chat
+                  with him directly.
+                </p>
+              </>
+            ) : (
+              <>
+                <h3 className="mt-6 font-serif text-4xl">Almost done!</h3>
+                <p className="mt-4 text-muted">
+                  Your booking details are ready in WhatsApp — just tap{" "}
+                  <strong className="text-foreground">Send</strong> to confirm your request. {firstName} will reply on
+                  WhatsApp to confirm availability.
+                </p>
+              </>
+            )}
             <div className="mt-8 flex flex-wrap gap-6">
               <a
                 href={sentLink}
@@ -136,7 +165,10 @@ export default function Contact() {
                 WhatsApp didn&apos;t open? Tap here
               </a>
               <button
-                onClick={() => setSentLink(null)}
+                onClick={() => {
+                  setSentLink(null);
+                  setAlerted(false);
+                }}
                 className="text-xs uppercase tracking-[0.25em] underline-offset-8 hover:underline"
               >
                 Make another booking
@@ -209,6 +241,14 @@ export default function Contact() {
               placeholder="Anything else? Number of days, guest count, ideas…"
               className={`${field} resize-none sm:col-span-2`}
               aria-label="Additional details"
+            />
+            {/* Honeypot for bots — hidden from people and screen readers. */}
+            <input
+              name="website"
+              tabIndex={-1}
+              autoComplete="off"
+              aria-hidden
+              className="absolute -left-[9999px] h-px w-px opacity-0"
             />
             <div className="sm:col-span-2">
               <button
