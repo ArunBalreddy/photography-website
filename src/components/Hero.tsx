@@ -68,7 +68,7 @@ export default function Hero() {
           style={delay(0)}
           className="hero-fade mb-6 text-[10px] uppercase tracking-[0.25em] text-accent md:text-xs md:tracking-[0.4em]"
         >
-          {site.location}
+          Hyderabad · 10+ years behind the lens<span className="hidden sm:inline"> · Available worldwide</span>
         </p>
         {/* Each line rises out of its own mask. */}
         <h1 className="max-w-4xl font-serif text-5xl font-light leading-[1.05] md:text-8xl">

@@ -35,10 +35,13 @@ export default async function Footer() {
         ))}
       </a>
       <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-6 px-6 pb-[calc(env(safe-area-inset-bottom)+6.5rem)] pt-10 text-sm text-muted md:flex-row md:pb-10">
-        <p className="text-foreground">
-          <span className="font-serif text-2xl tracking-[0.2em]">{site.name}</span>{" "}
-          <span className="font-serif italic text-accent">by {site.photographer}</span>
-        </p>
+        <div className="text-center md:text-left">
+          <p className="text-foreground">
+            <span className="font-serif text-2xl tracking-[0.2em]">{site.name}</span>{" "}
+            <span className="font-serif italic text-accent">by {site.photographer}</span>
+          </p>
+          <p className="mt-1 text-[10px] uppercase tracking-[0.3em] text-muted">{site.signature}</p>
+        </div>
         <nav className="flex gap-8">
           {site.social.map((s) => (
             <a key={s.label} href={s.href} target="_blank" rel="noreferrer" className="hover:text-accent">

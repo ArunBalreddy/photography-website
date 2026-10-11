@@ -117,7 +117,11 @@ export default function Gallery({ folders: source, works }: { folders: GalleryFo
       <div className="mb-20 flex flex-col justify-between gap-6 md:flex-row md:items-end">
         <SectionHeading eyebrow="Selected work" title="My Gallery" />
         <Reveal>
-          <p className="max-w-sm text-muted">Open a folder to explore each collection.</p>
+          <p className="max-w-sm text-muted">
+            <span className="font-serif text-xl italic text-accent">{site.signature}.</span>
+            <br />
+            Open a folder to explore each collection.
+          </p>
         </Reveal>
       </div>
 

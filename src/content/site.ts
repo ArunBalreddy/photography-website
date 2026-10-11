@@ -6,6 +6,10 @@ export const site = {
   tagline: "Your Story, Our Perspective.",
   photographer: "Nikhil Sonu",
   location: "Hyderabad, India · Available worldwide",
+  /** Search/social description (≈155 chars), drawn from the About story. */
+  description:
+    "Hyderabad photographer with 10+ years behind the lens, professionally trained at Hamstech College. Weddings, maternity, kids, portraits and food photography.",
+  signature: "Stories told through my lens",
   phone: "+91 81438 24214",
   /** Studio email — powers "Email us" and "Book via Email". Leave empty to hide them. */
   email: "sambursonu@gmail.com",
@@ -199,15 +203,19 @@ export const showreel: ReelItem[] = [
 ];
 
 export const about = {
-  heading: "I chase the in-between moments.",
+  heading: "I see stories where others see moments.",
   body: [
-    "For over a decade I've photographed weddings, people, and places across India and beyond. My work is quiet, honest, and rooted in natural light — less posing, more presence.",
-    "Whether it's the nervous laugh before a first look or fog lifting off a valley at dawn, I'm there to notice what you'll want to remember years from now.",
+    "With 10 years behind the lens and professional training from Hamstech College, I’ve built my journey around one belief: photography is not just about capturing what you see, but about preserving what you feel.",
+    "My perspective is rooted in authenticity, emotion, and the beauty of the unplanned. From the quiet anticipation before a wedding to the fleeting expressions, the in-between moments, and the stories hidden in everyday life, I look beyond the frame to capture what makes each moment meaningful.",
+    "My approach is thoughtful and instinctive — blending natural light, genuine emotions, artistic composition, and a cinematic eye to create photographs that feel timeless rather than simply beautiful.",
+    "Through Picturesque by Nikhil Sonu, I strive to create more than images. I create visual stories that bring you back to the people, places, and feelings that matter most.",
   ],
+  /** Shown as a pull-quote after the body. */
+  closing: "Because the best photographs don’t just show you a moment. They make you feel it all over again.",
   stats: [
-    { value: "12+", label: "Years behind the lens" },
-    { value: "340", label: "Weddings & events" },
-    { value: "18", label: "Countries shot" },
+    { value: "10+", label: "Years of Experience" },
+    { value: "Hamstech College", label: "Professionally Trained" },
+    { value: "Picturesque by Nikhil Sonu", label: "Stories Told Through My Lens" },
   ],
 };
 

@@ -11,17 +11,42 @@ const cormorant = Cormorant_Garamond({
   style: ["normal", "italic"],
 });
 
+const SITE_URL = "https://picturesque-by-nikhil-sonu.vercel.app";
+
 // Dark browser chrome on phones; let the bottom action bar sit above the iPhone home indicator.
 export const viewport: Viewport = { themeColor: "#0e0d0c", viewportFit: "cover" };
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://picturesque-by-nikhil-sonu.vercel.app"),
+  metadataBase: new URL(SITE_URL),
   title: `${site.fullName} — Wedding, Kids, Portrait & Food Photography`,
-  description: site.tagline,
+  description: site.description,
   openGraph: {
-    title: site.fullName,
-    description: site.tagline,
+    title: `${site.fullName} — ${site.tagline}`,
+    description: site.description,
     images: ["/hero/wedding-garlands.jpg"],
+  },
+};
+
+// Tells search engines who and where the studio is (shown in rich results / knowledge panels).
+const structuredData = {
+  "@context": "https://schema.org",
+  "@type": "ProfessionalService",
+  name: site.fullName,
+  slogan: site.tagline,
+  description: site.description,
+  url: SITE_URL,
+  image: `${SITE_URL}/hero/wedding-garlands.jpg`,
+  logo: `${SITE_URL}/brand/logo-white.png`,
+  telephone: site.phone.replace(/\s/g, ""),
+  email: site.email,
+  address: { "@type": "PostalAddress", addressLocality: "Hyderabad", addressRegion: "Telangana", addressCountry: "IN" },
+  areaServed: "Worldwide",
+  sameAs: [site.instagram],
+  founder: {
+    "@type": "Person",
+    name: site.photographer,
+    jobTitle: "Photographer",
+    alumniOf: { "@type": "EducationalOrganization", name: "Hamstech College" },
   },
 };
 
@@ -36,7 +61,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           }}
         />
       </head>
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }} />
+        {children}
+      </body>
     </html>
   );
 }
