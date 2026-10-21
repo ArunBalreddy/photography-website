@@ -4,6 +4,7 @@ import Link from "next/link";
 import ReviewForm from "@/components/reviews/ReviewForm";
 import { blurProps } from "@/content/blur";
 import { site } from "@/content/site";
+import { getPublicReviews } from "@/lib/reviews";
 import { storageMode } from "@/lib/storage";
 
 export const metadata: Metadata = {
@@ -14,7 +15,8 @@ export const metadata: Metadata = {
 
 const BACKDROP = "/hero/couple-petals.jpg";
 
-export default function ReviewPage() {
+export default async function ReviewPage() {
+  const { requireApproval } = await getPublicReviews();
   const first = site.photographer.split(" ")[0];
   return (
     <main className="relative isolate min-h-svh overflow-hidden">
@@ -55,7 +57,7 @@ export default function ReviewPage() {
           </Link>
         </div>
 
-        <ReviewForm open={storageMode() !== "none"} />
+        <ReviewForm open={storageMode() !== "none"} instant={!requireApproval} />
       </div>
     </main>
   );

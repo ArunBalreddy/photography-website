@@ -1,14 +1,15 @@
 "use server";
 
+import { updateTag } from "next/cache";
 import { headers } from "next/headers";
 import { after } from "next/server";
 import { shootTypes, site } from "@/content/site";
 import { sendWhatsAppAlert } from "@/lib/callmebot";
 import { checkReview, type ReviewField } from "@/lib/review-shared";
-import { submitReview } from "@/lib/reviews";
+import { REVIEWS_TAG, getPublicReviews, submitReview } from "@/lib/reviews";
 import { storageMode } from "@/lib/storage";
 
-export type ReviewFormState = { ok?: boolean; name?: string; error?: string; field?: ReviewField };
+export type ReviewFormState = { ok?: boolean; live?: boolean; name?: string; error?: string; field?: ReviewField };
 
 const HOUR = 60 * 60 * 1000;
 const PER_IP = 3;
@@ -31,7 +32,7 @@ export async function submitReviewAction(_: ReviewFormState, form: FormData): Pr
   const get = (key: string) => String(form.get(key) ?? "");
 
   // Honeypot: hidden from people, filled in by bots. Pretend it worked.
-  if (get("company")) return { ok: true, name: "" };
+  if (get("company")) return { ok: true, live: true, name: "" };
 
   const checked = checkReview(
     { name: get("name"), rating: Number(get("rating")), text: get("text"), shoot: get("shoot") },
@@ -46,7 +47,9 @@ export async function submitReviewAction(_: ReviewFormState, form: FormData): Pr
   if (rateLimited(ip)) return { error: "Thanks! We've already received your review — please try again later if you'd like to send another." };
 
   try {
+    const { requireApproval } = await getPublicReviews();
     const review = await submitReview(checked.value);
+    updateTag(REVIEWS_TAG); // with instant publishing, the review is on the site from the next page view
     const stars = "⭐".repeat(review.rating);
     after(() =>
       sendWhatsAppAlert(
@@ -58,13 +61,15 @@ export async function submitReviewAction(_: ReviewFormState, form: FormData): Pr
           "",
           `“${review.text.length > 400 ? `${review.text.slice(0, 400)}…` : review.text}”`,
           "",
-          `Approve it: ${site.url}/admin?tab=reviews`,
+          requireApproval
+            ? `Approve it: ${site.url}/admin?tab=reviews`
+            : `It's live on the site. Hide or delete it: ${site.url}/admin?tab=reviews`,
         ]
           .filter((line) => line !== null)
           .join("\n"),
       ),
     );
-    return { ok: true, name: review.name };
+    return { ok: true, live: !requireApproval, name: review.name };
   } catch (err) {
     console.error("Review submit failed:", err);
     return { error: "Sorry — your review couldn't be sent just now. Please try again in a minute." };

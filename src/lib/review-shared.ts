@@ -18,7 +18,8 @@ export type ModeratedReview = Review & { hidden: boolean; approvedAt: string; re
 /** What the public site receives. */
 export type PublicReview = Omit<ModeratedReview, "hidden" | "approvedAt">;
 
-export type ReviewsAdminData = { pending: Review[]; moderated: ModeratedReview[] };
+/** pending = the inbox: live on the site already when publishing is instant, otherwise waiting for approval. */
+export type ReviewsAdminData = { pending: Review[]; moderated: ModeratedReview[]; requireApproval: boolean };
 
 export const LIMITS = { nameMin: 2, nameMax: 60, textMin: 20, textMax: 1200, reply: 600 };
 

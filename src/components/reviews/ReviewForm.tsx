@@ -12,7 +12,7 @@ const field =
   "w-full border-b border-line bg-transparent py-3 text-foreground placeholder:text-muted/50 focus:border-accent focus:outline-none";
 const errorText = "mt-2 text-sm text-[#e57373]";
 
-export default function ReviewForm({ open }: { open: boolean }) {
+export default function ReviewForm({ open, instant }: { open: boolean; instant: boolean }) {
   const [state, action, pending] = useActionState<ReviewFormState, FormData>(submitReviewAction, {});
   const [rating, setRating] = useState(0);
   const [hover, setHover] = useState(0);
@@ -47,14 +47,16 @@ export default function ReviewForm({ open }: { open: boolean }) {
         </span>
         <p className="mt-6 font-serif text-4xl font-light">Thank you{state.name ? `, ${state.name.split(" ")[0]}` : ""}!</p>
         <p className="mx-auto mt-4 max-w-sm leading-relaxed text-muted">
-          Your review is with {site.photographer.split(" ")[0]} now and will appear on the site once it&apos;s approved.
+          {state.live
+            ? "Your review is now live on the site."
+            : `Your review is with ${site.photographer.split(" ")[0]} now and will appear on the site once it's approved.`}
         </p>
         <div className="mt-10 flex flex-col justify-center gap-3 sm:flex-row">
           <Link
             href="/#reviews"
             className="bg-accent px-8 py-4 text-xs font-medium uppercase tracking-[0.25em] text-background hover:bg-foreground"
           >
-            Back to the site
+            {state.live ? "See it on the site" : "Back to the site"}
           </Link>
           <a
             href={site.instagram}
@@ -186,7 +188,8 @@ export default function ReviewForm({ open }: { open: boolean }) {
           {pending ? "Sending…" : "Post my review"}
         </button>
         <p className="mt-4 text-center text-xs leading-relaxed text-muted">
-          Only your name, rating and words are shown. Reviews appear once {site.photographer.split(" ")[0]} approves them.
+          Only your name, rating and words are shown
+          {instant ? " — your review appears on the site straight away." : `. Reviews appear once ${site.photographer.split(" ")[0]} approves them.`}
         </p>
       </div>
     </form>

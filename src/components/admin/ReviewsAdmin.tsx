@@ -2,11 +2,13 @@
 
 import { useEffect, useRef, useState } from "react";
 import {
+  approveAllReviewsAction,
   approveReviewAction,
   deleteReviewAction,
   discardReviewAction,
   loadReviewsAction,
   replyToReviewAction,
+  setRequireApprovalAction,
   setReviewHiddenAction,
   type ReviewsResult,
 } from "@/app/admin/actions";
@@ -73,7 +75,8 @@ export default function ReviewsAdmin({
 
   const pending = data?.pending ?? [];
   const moderated = data?.moderated ?? [];
-  const live = moderated.filter((r) => !r.hidden);
+  const instant = !data?.requireApproval; // new reviews go live straight away
+  const live = [...moderated.filter((r) => !r.hidden), ...(instant ? pending : [])];
   const average = live.length ? live.reduce((s, r) => s + r.rating, 0) / live.length : 0;
 
   const copyLink = async () => {
@@ -100,10 +103,10 @@ export default function ReviewsAdmin({
           <dl className="grid grid-cols-2 gap-x-8 gap-y-1 text-sm">
             <dt className="text-muted">On the site</dt>
             <dd>{live.length}</dd>
-            <dt className="text-muted">Waiting</dt>
+            <dt className="text-muted">{instant ? "New" : "Waiting"}</dt>
             <dd className={pending.length ? "text-accent" : ""}>{pending.length}</dd>
             <dt className="text-muted">Hidden</dt>
-            <dd>{moderated.length - live.length}</dd>
+            <dd>{moderated.filter((r) => r.hidden).length}</dd>
           </dl>
           <button
             className={`${btn} ml-auto`}
@@ -112,6 +115,27 @@ export default function ReviewsAdmin({
           >
             {busy === "refresh" ? "Checking…" : "Check for new"}
           </button>
+          <label className="flex w-full cursor-pointer items-start gap-3 border-t border-line pt-5">
+            <input
+              type="checkbox"
+              checked={instant}
+              disabled={readOnly || busy !== null || !data}
+              onChange={(e) => run("mode", () => setRequireApprovalAction(!e.target.checked))}
+              className="peer sr-only"
+            />
+            <span
+              aria-hidden
+              className="relative mt-0.5 h-5 w-9 shrink-0 rounded-full bg-foreground/20 transition-colors after:absolute after:left-0.5 after:top-0.5 after:h-4 after:w-4 after:rounded-full after:bg-foreground after:transition-transform peer-checked:bg-accent peer-checked:after:translate-x-4 peer-focus-visible:outline peer-focus-visible:outline-1 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-accent"
+            />
+            <span className="text-sm">
+              Publish new reviews instantly
+              <span className="mt-0.5 block text-xs text-muted">
+                {instant
+                  ? "On: reviews appear on the site the moment they're sent. Hide or delete any you don't want."
+                  : "Off: new reviews wait here until you approve them."}
+              </span>
+            </span>
+          </label>
         </div>
 
         <div className="border border-line bg-surface p-6">
@@ -136,32 +160,58 @@ export default function ReviewsAdmin({
       )}
 
       <section>
-        <h2 className="mb-4 flex items-baseline gap-3 font-serif text-3xl">
-          Waiting for approval
-          <span className="font-sans text-sm text-muted">{pending.length}</span>
-        </h2>
+        <div className="mb-4 flex flex-wrap items-baseline justify-between gap-3">
+          <h2 className="flex items-baseline gap-3 font-serif text-3xl">
+            {instant ? "New reviews" : "Waiting for approval"}
+            <span className="font-sans text-sm text-muted">{pending.length}</span>
+          </h2>
+          {instant && pending.length > 1 && (
+            <button className={btn} disabled={readOnly || busy !== null} onClick={() => run("all", approveAllReviewsAction)}>
+              {busy === "all" ? "Saving…" : "Mark all as seen"}
+            </button>
+          )}
+        </div>
+        {instant && pending.length > 0 && (
+          <p className="mb-4 text-sm text-muted">These are already live on the site. Hide or delete any you don&apos;t want.</p>
+        )}
         {pending.length === 0 ? (
           <p className="border border-dashed border-line px-6 py-8 text-sm text-muted">
-            No new reviews right now. New ones appear here first — nothing reaches the site until you approve it.
+            {instant
+              ? "No new reviews since you last looked. New ones appear here (and on the site) the moment they're sent."
+              : "No new reviews right now. New ones appear here first — nothing reaches the site until you approve it."}
           </p>
         ) : (
           <ul className="grid gap-4 md:grid-cols-2">
             {pending.map((r) => (
               <li key={r.id} className="flex flex-col border border-accent/40 bg-surface p-6">
+                {instant && (
+                  <span className="mb-4 w-fit bg-[#25D366]/15 px-2 py-0.5 text-[9px] uppercase tracking-[0.2em] text-[#25D366]">
+                    New · on the site
+                  </span>
+                )}
                 <ReviewBody review={r} />
                 <div className="mt-6 flex flex-wrap gap-2">
                   <button
-                    className={primary}
+                    className={instant ? btn : primary}
                     disabled={readOnly || busy !== null}
                     onClick={() => run(r.id, () => approveReviewAction(r.id))}
                   >
-                    {busy === r.id ? "Publishing…" : "Approve & publish"}
+                    {busy === r.id ? "Saving…" : instant ? "Mark as seen" : "Approve & publish"}
                   </button>
+                  {instant && (
+                    <button
+                      className={btn}
+                      disabled={readOnly || busy !== null}
+                      onClick={() => run(`${r.id}-hide`, () => setReviewHiddenAction(r.id, true))}
+                    >
+                      {busy === `${r.id}-hide` ? "Hiding…" : "Hide from site"}
+                    </button>
+                  )}
                   <button
-                    className={danger}
+                    className={`${danger} ml-auto`}
                     disabled={readOnly || busy !== null}
                     onClick={() =>
-                      confirm(`Delete the review from ${r.name}? It won't appear on the site.`) &&
+                      confirm(`Delete the review from ${r.name}?${instant ? " It will be removed from the site." : ""}`) &&
                       run(r.id, () => discardReviewAction(r.id))
                     }
                   >

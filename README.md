@@ -41,12 +41,13 @@ be tried end to end.
 
 ## Client reviews
 
-Clients write a review at `/review` (star rating, name, optional shoot type, their words). Each review waits in an
-inbox until it's approved in **Admin → Reviews**. Approved reviews appear right away in the homepage's "Kind words"
-section, with the average rating. In the admin you can approve, hide or show again, reply as Nikhil, or delete a
-review, and copy or WhatsApp the review link to clients after a shoot.
+Clients write a review at `/review` (star rating, name, optional shoot type, their words). By default a review is
+**live on the site the moment it's sent**, and the homepage's "Kind words" section and average rating update straight
+away. In **Admin → Reviews**, new reviews are listed first, and Nikhil can hide or show, reply, or delete any review, or
+copy/WhatsApp the review link to clients. The "Publish new reviews instantly" switch can be turned off so new reviews
+wait for approval instead (reviews already live stay live).
 
 - Storage: the same `CLOUDINARY_URL`. The inbox is one small JSON file per review under `picturesque/reviews/inbox/`,
   so reviews sent at the same moment never overwrite each other. Published reviews live in `picturesque/reviews.json`.
-- Spam guards: a honeypot field, links rejected, 3 reviews per IP per hour, and nothing goes live without approval.
-- With `CALLMEBOT_APIKEY` set, Nikhil gets a WhatsApp alert for each new review with a link to approve it.
+- Spam guards: a honeypot field, links rejected, 3 reviews per IP per hour, plus the approval switch if spam shows up.
+- With `CALLMEBOT_APIKEY` set, Nikhil gets a WhatsApp alert for each new review with a link to the admin.

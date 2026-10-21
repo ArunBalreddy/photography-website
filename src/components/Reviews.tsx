@@ -10,7 +10,7 @@ const cta =
   "inline-block border border-foreground/40 px-8 py-4 text-xs uppercase tracking-[0.25em] transition-colors hover:border-accent hover:bg-accent hover:text-background";
 
 export default async function Reviews() {
-  const reviews = await getPublicReviews();
+  const { reviews } = await getPublicReviews();
   const count = reviews.length;
   const average = count ? reviews.reduce((sum, r) => sum + r.rating, 0) / count : 0;
 

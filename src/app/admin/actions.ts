@@ -6,7 +6,15 @@ import { changeCredentials, requireAdmin, signIn, signOut } from "@/lib/admin-au
 import { cloudinaryConfig, destroyAsset, signUploadParams } from "@/lib/cloudinary";
 import { GALLERY_TAG, saveManifest, type Manifest } from "@/lib/gallery";
 import { LIMITS, cleanText, type ReviewsAdminData } from "@/lib/review-shared";
-import { REVIEWS_TAG, approveReview, discardPendingReview, loadReviewsForAdmin, updateReview } from "@/lib/reviews";
+import {
+  REVIEWS_TAG,
+  approveAllReviews,
+  approveReview,
+  discardPendingReview,
+  loadReviewsForAdmin,
+  setRequireApproval,
+  updateReview,
+} from "@/lib/reviews";
 import { storageMode } from "@/lib/storage";
 
 export type FormState = { error?: string; ok?: string };
@@ -98,11 +106,20 @@ export async function loadReviewsAction() {
   return reviewsAction();
 }
 
+/** Approves a waiting review, or (when publishing is instant) marks a new one as seen. */
 export async function approveReviewAction(id: string) {
   return reviewsAction(() => approveReview(id));
 }
 
-/** Deletes a review that is still waiting (it never reached the site). */
+export async function approveAllReviewsAction() {
+  return reviewsAction(approveAllReviews);
+}
+
+export async function setRequireApprovalAction(requireApproval: boolean) {
+  return reviewsAction(() => setRequireApproval(Boolean(requireApproval)));
+}
+
+/** Deletes a review that is still in the inbox (new, or waiting for approval). */
 export async function discardReviewAction(id: string) {
   return reviewsAction(() => discardPendingReview(id));
 }
