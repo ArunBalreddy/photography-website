@@ -32,31 +32,73 @@ async function signedPost(cfg: CloudinaryConfig, path: string, params: Record<st
   return res.json();
 }
 
-// The gallery's list of folders and items lives in Cloudinary as one JSON file.
-const MANIFEST_ID = "picturesque/gallery.json";
+const basicAuth = (cfg: CloudinaryConfig) => `Basic ${Buffer.from(`${cfg.key}:${cfg.secret}`).toString("base64")}`;
 
-export async function readManifestJson(cfg: CloudinaryConfig, fresh: boolean): Promise<unknown | null> {
+// Public JSON documents (the gallery manifest, the published reviews), one raw file each.
+export async function readPublicJson(cfg: CloudinaryConfig, publicId: string, fresh: boolean): Promise<unknown | null> {
   const init: RequestInit = fresh ? { cache: "no-store" } : {};
-  const auth = Buffer.from(`${cfg.key}:${cfg.secret}`).toString("base64");
-  const meta = await fetch(api(cfg, `resources/raw/upload/${MANIFEST_ID}`), {
-    ...init,
-    headers: { Authorization: `Basic ${auth}` },
-  });
+  const meta = await fetch(api(cfg, `resources/raw/upload/${publicId}`), { ...init, headers: { Authorization: basicAuth(cfg) } });
   if (meta.status === 404) return null;
-  if (!meta.ok) throw new Error(`Cloudinary gallery lookup failed (${meta.status})`);
+  if (!meta.ok) throw new Error(`Cloudinary lookup of ${publicId} failed (${meta.status})`);
   const { secure_url } = (await meta.json()) as { secure_url: string };
   const file = await fetch(secure_url, init); // versioned URL, so always the latest save
-  if (!file.ok) throw new Error(`Cloudinary gallery download failed (${file.status})`);
+  if (!file.ok) throw new Error(`Cloudinary download of ${publicId} failed (${file.status})`);
   return file.json();
 }
 
-export async function writeManifestJson(cfg: CloudinaryConfig, json: string) {
+export async function writePublicJson(cfg: CloudinaryConfig, publicId: string, json: string) {
   await signedPost(
     cfg,
     "raw/upload",
-    { invalidate: "true", overwrite: "true", public_id: MANIFEST_ID, timestamp: now() },
+    { invalidate: "true", overwrite: "true", public_id: publicId, timestamp: now() },
     new Blob([json], { type: "application/json" }),
   );
+}
+
+// A folder of small JSON files that anyone may add to (new reviews), so concurrent writers never
+// overwrite each other. Names are random, so a file can only be found by listing with the API secret.
+export async function addFolderJson(cfg: CloudinaryConfig, folder: string, name: string, json: string) {
+  await signedPost(
+    cfg,
+    "raw/upload",
+    { public_id: `${folder}/${name}.json`, timestamp: now() },
+    new Blob([json], { type: "application/json" }),
+  );
+}
+
+export async function listFolderJson(cfg: CloudinaryConfig, folder: string): Promise<unknown[]> {
+  const urls: string[] = [];
+  let cursor = "";
+  do {
+    const qs = new URLSearchParams({ prefix: `${folder}/`, max_results: "500", ...(cursor ? { next_cursor: cursor } : {}) });
+    const res = await fetch(api(cfg, `resources/raw/upload?${qs}`), { cache: "no-store", headers: { Authorization: basicAuth(cfg) } });
+    if (!res.ok) throw new Error(`Cloudinary listing of ${folder} failed (${res.status})`);
+    const page = (await res.json()) as { resources: { secure_url: string }[]; next_cursor?: string };
+    urls.push(...page.resources.map((r) => r.secure_url));
+    cursor = page.next_cursor ?? "";
+  } while (cursor && urls.length < 2000);
+  const files: unknown[] = [];
+  for (let i = 0; i < urls.length; i += 20) {
+    const batch = await Promise.all(
+      urls.slice(i, i + 20).map(async (url) => {
+        const res = await fetch(url, { cache: "no-store" });
+        return res.ok ? res.json().catch(() => null) : null;
+      }),
+    );
+    files.push(...batch.filter((f) => f !== null));
+  }
+  return files;
+}
+
+export async function readFolderJson(cfg: CloudinaryConfig, folder: string, name: string): Promise<unknown | null> {
+  const res = await fetch(`https://res.cloudinary.com/${cfg.cloud}/raw/upload/${folder}/${name}.json`, { cache: "no-store" });
+  if (res.status === 404) return null;
+  if (!res.ok) throw new Error(`Cloudinary download of ${name} failed (${res.status})`);
+  return res.json();
+}
+
+export async function removeFolderJson(cfg: CloudinaryConfig, folder: string, name: string) {
+  await destroyAsset(cfg, `${folder}/${name}.json`, "raw");
 }
 
 /** Signature the admin's browser uses to upload a file straight to Cloudinary (the secret never leaves the server). */
@@ -65,16 +107,15 @@ export function signUploadParams(cfg: CloudinaryConfig, folder: string) {
   return { cloud: cfg.cloud, apiKey: cfg.key, folder, timestamp, signature: sign({ folder, timestamp }, cfg.secret) };
 }
 
-export async function destroyAsset(cfg: CloudinaryConfig, publicId: string, resourceType: "image" | "video") {
+export async function destroyAsset(cfg: CloudinaryConfig, publicId: string, resourceType: "image" | "video" | "raw") {
   await signedPost(cfg, `${resourceType}/destroy`, { invalidate: "true", public_id: publicId, timestamp: now() });
 }
 
 // Private JSON (type "private": no public URL) — used for the admin's password hash.
 export async function readPrivateJson(cfg: CloudinaryConfig, publicId: string): Promise<unknown | null> {
-  const auth = Buffer.from(`${cfg.key}:${cfg.secret}`).toString("base64");
   const meta = await fetch(api(cfg, `resources/raw/private/${publicId}`), {
     cache: "no-store",
-    headers: { Authorization: `Basic ${auth}` },
+    headers: { Authorization: basicAuth(cfg) },
   });
   if (meta.status === 404) return null;
   if (!meta.ok) throw new Error(`Cloudinary private lookup failed (${meta.status})`);

@@ -1,9 +1,8 @@
-import { shootTypes, site } from "@/content/site";
+import { shootTypes } from "@/content/site";
 import { formatShootDate, toWhatsAppDigits } from "@/lib/booking";
+import { sendWhatsAppAlert } from "@/lib/callmebot";
 
-// Sends the studio an instant WhatsApp alert for each booking via CallMeBot
-// (https://www.callmebot.com/blog/free-api-whatsapp-messages/).
-// Needs CALLMEBOT_APIKEY set in Vercel; CALLMEBOT_PHONE optionally overrides site.whatsapp.
+// Sends the studio an instant WhatsApp alert for each booking (see lib/callmebot.ts).
 
 const WINDOW_MS = 10 * 60 * 1000;
 const MAX_PER_WINDOW = 5;
@@ -52,9 +51,6 @@ export async function POST(request: Request) {
   const ip = request.headers.get("x-forwarded-for")?.split(",")[0].trim() || "unknown";
   if (rateLimited(ip)) return fail("rate_limited", 429);
 
-  const apikey = process.env.CALLMEBOT_APIKEY;
-  if (!apikey) return fail("not_configured", 503);
-
   const location = str("location", 120);
   const message = str("message", 600);
   const text = [
@@ -73,19 +69,7 @@ export async function POST(request: Request) {
     .filter((line) => line !== null)
     .join("\n");
 
-  const to = process.env.CALLMEBOT_PHONE ?? `+${site.whatsapp}`;
-  const url =
-    `https://api.callmebot.com/whatsapp.php?phone=${encodeURIComponent(to)}` +
-    `&text=${encodeURIComponent(text)}&apikey=${encodeURIComponent(apikey)}`;
-
-  try {
-    const res = await fetch(url, { cache: "no-store", signal: AbortSignal.timeout(15000) });
-    const reply = (await res.text()).replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
-    const ok = res.ok && !/apikey is invalid|error/i.test(reply);
-    if (!ok) console.error(`CallMeBot alert failed (${res.status}): ${reply.slice(0, 300)}`);
-    return ok ? Response.json({ ok: true }) : fail("send_failed", 502);
-  } catch (err) {
-    console.error("CallMeBot alert failed:", err);
-    return fail("send_failed", 502);
-  }
+  const result = await sendWhatsAppAlert(text);
+  if (result === "not_configured") return fail("not_configured", 503);
+  return result === "sent" ? Response.json({ ok: true }) : fail("send_failed", 502);
 }

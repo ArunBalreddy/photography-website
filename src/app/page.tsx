@@ -6,7 +6,7 @@ import Hero from "@/components/Hero";
 import Gallery from "@/components/Gallery";
 import About from "@/components/About";
 import Services from "@/components/Services";
-import Testimonials from "@/components/Testimonials";
+import Reviews from "@/components/Reviews";
 import Contact from "@/components/Contact";
 import Footer from "@/components/Footer";
 import FloatingContact from "@/components/FloatingContact";
@@ -23,7 +23,7 @@ export default async function Home() {
         <Gallery folders={gallery.folders} works={gallery.works} />
         <About />
         <Services />
-        <Testimonials />
+        <Reviews />
         <Contact />
       </main>
       <Footer />

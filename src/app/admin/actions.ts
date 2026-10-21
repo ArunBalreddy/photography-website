@@ -5,6 +5,8 @@ import { updateTag } from "next/cache";
 import { changeCredentials, requireAdmin, signIn, signOut } from "@/lib/admin-auth";
 import { cloudinaryConfig, destroyAsset, signUploadParams } from "@/lib/cloudinary";
 import { GALLERY_TAG, saveManifest, type Manifest } from "@/lib/gallery";
+import { LIMITS, cleanText, type ReviewsAdminData } from "@/lib/review-shared";
+import { REVIEWS_TAG, approveReview, discardPendingReview, loadReviewsForAdmin, updateReview } from "@/lib/reviews";
 import { storageMode } from "@/lib/storage";
 
 export type FormState = { error?: string; ok?: string };
@@ -71,4 +73,48 @@ export async function deleteAssetAction(publicId: string, kind: "photo" | "video
   } catch (err) {
     return { ok: false, error: err instanceof Error ? err.message : "Couldn't delete the file." };
   }
+}
+
+// ── reviews ──
+
+export type ReviewsResult = { ok: true; data: ReviewsAdminData } | { ok: false; error: string };
+
+async function reviewsAction(change?: () => Promise<void>): Promise<ReviewsResult> {
+  try {
+    await requireAdmin();
+    if (change) {
+      if (storageMode() === "none") throw new Error("Connect Cloudinary first — reviews need somewhere to be stored.");
+      await change();
+      updateTag(REVIEWS_TAG);
+    }
+    return { ok: true, data: await loadReviewsForAdmin() };
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : "Something went wrong." };
+  }
+}
+
+/** Latest reviews: new ones waiting for approval, and the ones already handled. */
+export async function loadReviewsAction() {
+  return reviewsAction();
+}
+
+export async function approveReviewAction(id: string) {
+  return reviewsAction(() => approveReview(id));
+}
+
+/** Deletes a review that is still waiting (it never reached the site). */
+export async function discardReviewAction(id: string) {
+  return reviewsAction(() => discardPendingReview(id));
+}
+
+export async function setReviewHiddenAction(id: string, hidden: boolean) {
+  return reviewsAction(() => updateReview(id, { hidden: Boolean(hidden) }));
+}
+
+export async function replyToReviewAction(id: string, reply: string) {
+  return reviewsAction(() => updateReview(id, { reply: cleanText(String(reply)).slice(0, LIMITS.reply) }));
+}
+
+export async function deleteReviewAction(id: string) {
+  return reviewsAction(() => updateReview(id, "delete"));
 }

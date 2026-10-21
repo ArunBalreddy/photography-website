@@ -3,6 +3,7 @@
 export const site = {
   name: "PICTURESQUE",
   fullName: "PICTURESQUE by Nikhil Sonu",
+  url: "https://picturesque-by-nikhil-sonu.vercel.app",
   tagline: "Your Story, Our Perspective.",
   photographer: "Nikhil Sonu",
   location: "Hyderabad, India · Available worldwide",
@@ -62,7 +63,7 @@ export const nav = [
   { label: "Work", href: "#work" },
   { label: "About", href: "#about" },
   { label: "Services", href: "#services" },
-  { label: "Journal", href: "#testimonials" },
+  { label: "Reviews", href: "#reviews" },
   { label: "Contact", href: "#contact" },
 ];
 
@@ -255,20 +256,3 @@ export const services = [
   },
 ];
 
-export const testimonials = [
-  {
-    quote: "We've looked at our wedding album a hundred times and still find new details. It feels exactly like the day did.",
-    name: "Priya & Rohan",
-    role: "Wedding, Hyderabad",
-  },
-  {
-    quote: "I usually hate being photographed. Nikhil made it feel like a conversation — the portraits are the most 'me' I've ever looked.",
-    name: "Neha Sharma",
-    role: "Portrait session",
-  },
-  {
-    quote: "Our seemantham photos are so warm and natural. Nikhil caught every little moment with our families.",
-    name: "Sowmya & Karthik",
-    role: "Maternity, Hyderabad",
-  },
-];

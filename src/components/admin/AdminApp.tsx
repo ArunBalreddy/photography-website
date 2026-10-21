@@ -12,8 +12,12 @@ import {
 } from "@/app/admin/actions";
 import { blurProps } from "@/content/blur";
 import type { Manifest, StoredItem } from "@/lib/gallery";
+import type { ReviewsAdminData } from "@/lib/review-shared";
 import type { StorageMode } from "@/lib/storage";
 import { MAX_VIDEO_BYTES, cloudinaryPoster, cloudinaryVideo, preparePhoto, prepareVideo, titleFromFilename, uploadFile } from "./media";
+import ReviewsAdmin from "./ReviewsAdmin";
+
+export type AdminTab = "gallery" | "reviews";
 
 type Status = { kind: "idle" | "pending" | "saving" | "saved" | "error"; message?: string };
 type Job = { key: string; name: string; progress: number; state: "preparing" | "uploading" | "done" | "error"; error?: string };
@@ -43,12 +47,20 @@ export default function AdminApp({
   storage,
   username,
   loadError,
+  reviews: initialReviews,
+  reviewsError,
+  initialTab,
 }: {
   initial: Manifest;
   storage: StorageMode;
   username: string;
   loadError?: string;
+  reviews: ReviewsAdminData | null;
+  reviewsError?: string;
+  initialTab: AdminTab;
 }) {
+  const [tab, setTab] = useState<AdminTab>(initialTab);
+  const [reviews, setReviews] = useState(initialReviews);
   const [m, setM] = useState<Manifest>(initial);
   const mRef = useRef(initial); // latest gallery, for async uploads finishing after other edits
   const [active, setActive] = useState(initial.folders[0]?.id ?? "");
@@ -281,7 +293,7 @@ export default function AdminApp({
             </span>
             <div className="leading-tight">
               <p className="font-serif text-xl font-semibold tracking-[0.18em]">PICTURESQUE</p>
-              <p className="text-[10px] uppercase tracking-[0.3em] text-accent">Gallery admin</p>
+              <p className="text-[10px] uppercase tracking-[0.3em] text-accent">Studio admin</p>
             </div>
           </div>
           <div className="flex flex-wrap items-center gap-2">
@@ -321,225 +333,256 @@ export default function AdminApp({
         {status.kind === "error" && status.message && (
           <p className="mx-auto max-w-7xl px-6 pb-3 text-xs text-[#e57373]">{status.message}</p>
         )}
+        <nav className="mx-auto flex max-w-7xl gap-8 px-6" role="tablist" aria-label="Admin sections">
+          {(["gallery", "reviews"] as const).map((t) => (
+            <button
+              key={t}
+              role="tab"
+              aria-selected={tab === t}
+              onClick={() => {
+                setTab(t);
+                history.replaceState(null, "", t === "gallery" ? "/admin" : "/admin?tab=reviews");
+              }}
+              className={`-mb-px flex items-center gap-2 border-b-2 pb-3 text-xs uppercase tracking-[0.25em] transition-colors ${
+                tab === t ? "border-accent text-foreground" : "border-transparent text-muted hover:text-foreground"
+              }`}
+            >
+              {t === "gallery" ? "Gallery" : "Reviews"}
+              {t === "reviews" && Boolean(reviews?.pending.length) && (
+                <span className="min-w-5 rounded-full bg-accent px-1.5 py-px text-center text-[10px] font-medium tracking-normal text-background">
+                  {reviews!.pending.length}
+                </span>
+              )}
+            </button>
+          ))}
+        </nav>
       </header>
 
-      {loadError && (
-        <p className="mx-auto mt-6 max-w-7xl border border-[#e57373]/50 bg-[#e57373]/10 px-6 py-4 text-sm">
-          Couldn&apos;t load the saved gallery ({loadError}). Editing is paused so nothing gets overwritten — refresh to try
-          again.
-        </p>
-      )}
-      {!loadError && storage === "none" && (
-        <p className="mx-auto mt-6 max-w-7xl border border-accent/50 bg-accent/10 px-6 py-4 text-sm">
-          Cloudinary isn&apos;t connected yet, so the gallery is read-only. Add <code>CLOUDINARY_URL</code> in Vercel →
-          Settings → Environment Variables and redeploy.
-        </p>
-      )}
-      {storage === "dev" && (
-        <p className="mx-auto mt-6 max-w-7xl border border-line px-6 py-3 text-xs text-muted">
-          Development mode: changes save to <code>.data/</code> and uploads to <code>public/uploads/</code> on this computer.
-        </p>
-      )}
+      {tab === "reviews" ? (
+        <ReviewsAdmin data={reviews} setData={setReviews} loadError={reviewsError} readOnly={storage === "none"} />
+      ) : (
+        <>
 
-      <div className="mx-auto grid max-w-7xl gap-8 px-6 py-8 lg:grid-cols-[300px_1fr]">
-        {/* folders */}
-        <aside>
-          <p className="mb-3 text-[10px] uppercase tracking-[0.3em] text-accent">Folders</p>
-          <ul className="space-y-2">
-            {m.folders.map((f, i) => (
-              <li
-                key={f.id}
-                className={`flex items-center gap-1 border pl-3 pr-1 transition-colors ${
-                  f.id === folder?.id ? "border-accent bg-accent/10" : "border-line hover:border-foreground/30"
-                }`}
-              >
-                <button onClick={() => setActive(f.id)} className="flex min-w-0 flex-1 items-baseline gap-2 py-2.5 text-left">
-                  <span className="truncate font-serif text-lg">{f.title}</span>
-                  <span className="text-[10px] text-muted">{count(f.id)}</span>
-                </button>
-                <button className={iconBtn} aria-label={`Move ${f.title} up`} disabled={readOnly || i === 0} onClick={() => moveFolder(f.id, -1)}>
-                  ↑
-                </button>
-                <button
-                  className={iconBtn}
-                  aria-label={`Move ${f.title} down`}
-                  disabled={readOnly || i === m.folders.length - 1}
-                  onClick={() => moveFolder(f.id, 1)}
-                >
-                  ↓
-                </button>
-              </li>
-            ))}
-          </ul>
-          <form
-            className="mt-4 flex gap-2"
-            onSubmit={(e) => {
-              e.preventDefault();
-              addFolder();
-            }}
-          >
-            <input
-              value={newFolder}
-              onChange={(e) => setNewFolder(e.target.value)}
-              placeholder="New folder name"
-              maxLength={60}
-              disabled={readOnly}
-              className={input}
-            />
-            <button className={btn} disabled={readOnly || !newFolder.trim()}>
-              + Add
-            </button>
-          </form>
-          <p className="mt-6 text-xs leading-relaxed text-muted">
-            Empty folders stay hidden on the site. The <span className="text-foreground">Films</span> folder fills itself
-            with every video.
-          </p>
-        </aside>
+          {loadError && (
+            <p className="mx-auto mt-6 max-w-7xl border border-[#e57373]/50 bg-[#e57373]/10 px-6 py-4 text-sm">
+              Couldn&apos;t load the saved gallery ({loadError}). Editing is paused so nothing gets overwritten — refresh to try
+              again.
+            </p>
+          )}
+          {!loadError && storage === "none" && (
+            <p className="mx-auto mt-6 max-w-7xl border border-accent/50 bg-accent/10 px-6 py-4 text-sm">
+              Cloudinary isn&apos;t connected yet, so the gallery is read-only. Add <code>CLOUDINARY_URL</code> in Vercel →
+              Settings → Environment Variables and redeploy.
+            </p>
+          )}
+          {storage === "dev" && (
+            <p className="mx-auto mt-6 max-w-7xl border border-line px-6 py-3 text-xs text-muted">
+              Development mode: changes save to <code>.data/</code> and uploads to <code>public/uploads/</code> on this computer.
+            </p>
+          )}
 
-        {/* folder workspace */}
-        {folder && (
-          <section className="min-w-0">
-            <div className="flex flex-wrap items-end justify-between gap-4 border-b border-line pb-4">
-              <label className="min-w-0 flex-1">
-                <span className="text-[10px] uppercase tracking-[0.3em] text-accent">Folder name</span>
-                <input
-                  key={`${folder.id}-${folder.title}`}
-                  defaultValue={folder.title}
-                  maxLength={60}
-                  disabled={readOnly}
-                  onBlur={(e) => renameFolder(folder.id, e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && e.currentTarget.blur()}
-                  className="w-full border-b border-transparent bg-transparent font-serif text-4xl hover:border-line focus:border-accent focus:outline-none"
-                />
-              </label>
-              <button className={`${btn} hover:!border-[#e57373] hover:!text-[#e57373]`} disabled={readOnly} onClick={() => deleteFolder(folder.id)}>
-                Delete folder
-              </button>
-            </div>
-
-            <label
-              onDragOver={(e) => {
-                e.preventDefault();
-                setDragOver(true);
-              }}
-              onDragLeave={() => setDragOver(false)}
-              onDrop={onDrop}
-              className={`mt-6 flex cursor-pointer flex-col items-center justify-center gap-2 border-2 border-dashed px-6 py-10 text-center transition-colors ${
-                readOnly ? "pointer-events-none opacity-40" : ""
-              } ${dragOver ? "border-accent bg-accent/10" : "border-line hover:border-foreground/40"}`}
-            >
-              <input
-                type="file"
-                multiple
-                accept="image/*,video/*,.heic,.heif"
-                className="sr-only"
-                disabled={readOnly}
-                onChange={(e) => {
-                  onFiles(e.target.files);
-                  e.target.value = "";
-                }}
-              />
-              <span className="font-serif text-2xl">Drop photos & videos here</span>
-              <span className="text-xs text-muted">
-                or <span className="text-accent underline underline-offset-4">browse</span> — added to “{folder.title}”. Photos
-                are resized and stripped of location data; videos up to 100 MB.
-              </span>
-            </label>
-
-            {jobs.length > 0 && (
-              <ul className="mt-4 space-y-2">
-                {jobs.map((j) => (
-                  <li key={j.key} className="border border-line px-4 py-2 text-xs">
-                    <div className="flex items-center justify-between gap-4">
-                      <span className="truncate">{j.name}</span>
-                      <span className={j.state === "error" ? "text-[#e57373]" : j.state === "done" ? "text-[#25D366]" : "text-muted"}>
-                        {j.state === "preparing" ? "Preparing…" : j.state === "uploading" ? `${Math.round(j.progress * 100)}%` : j.state === "done" ? "Added ✓" : "Failed"}
-                      </span>
-                    </div>
-                    {j.state === "uploading" && (
-                      <div className="mt-2 h-0.5 bg-line">
-                        <div className="h-full bg-accent transition-[width]" style={{ width: `${j.progress * 100}%` }} />
-                      </div>
-                    )}
-                    {j.error && <p className="mt-1 text-[#e57373]">{j.error}</p>}
+          <div className="mx-auto grid max-w-7xl gap-8 px-6 py-8 lg:grid-cols-[300px_1fr]">
+            {/* folders */}
+            <aside>
+              <p className="mb-3 text-[10px] uppercase tracking-[0.3em] text-accent">Folders</p>
+              <ul className="space-y-2">
+                {m.folders.map((f, i) => (
+                  <li
+                    key={f.id}
+                    className={`flex items-center gap-1 border pl-3 pr-1 transition-colors ${
+                      f.id === folder?.id ? "border-accent bg-accent/10" : "border-line hover:border-foreground/30"
+                    }`}
+                  >
+                    <button onClick={() => setActive(f.id)} className="flex min-w-0 flex-1 items-baseline gap-2 py-2.5 text-left">
+                      <span className="truncate font-serif text-lg">{f.title}</span>
+                      <span className="text-[10px] text-muted">{count(f.id)}</span>
+                    </button>
+                    <button className={iconBtn} aria-label={`Move ${f.title} up`} disabled={readOnly || i === 0} onClick={() => moveFolder(f.id, -1)}>
+                      ↑
+                    </button>
+                    <button
+                      className={iconBtn}
+                      aria-label={`Move ${f.title} down`}
+                      disabled={readOnly || i === m.folders.length - 1}
+                      onClick={() => moveFolder(f.id, 1)}
+                    >
+                      ↓
+                    </button>
                   </li>
                 ))}
               </ul>
-            )}
+              <form
+                className="mt-4 flex gap-2"
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  addFolder();
+                }}
+              >
+                <input
+                  value={newFolder}
+                  onChange={(e) => setNewFolder(e.target.value)}
+                  placeholder="New folder name"
+                  maxLength={60}
+                  disabled={readOnly}
+                  className={input}
+                />
+                <button className={btn} disabled={readOnly || !newFolder.trim()}>
+                  + Add
+                </button>
+              </form>
+              <p className="mt-6 text-xs leading-relaxed text-muted">
+                Empty folders stay hidden on the site. The <span className="text-foreground">Films</span> folder fills itself
+                with every video.
+              </p>
+            </aside>
 
-            <p className="mb-3 mt-8 text-[10px] uppercase tracking-[0.3em] text-muted">
-              {items.length} item{items.length === 1 ? "" : "s"} · the first three photos are the folder&apos;s cover
-            </p>
-            <ul className="grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-4">
-              {items.map((item, idx) => (
-                <li key={item.id} className="flex flex-col border border-line bg-surface">
-                  <div className="relative aspect-square overflow-hidden bg-background">
-                    <Image
-                      src={item.src}
-                      alt={item.alt}
-                      fill
-                      sizes="(min-width: 1280px) 18vw, (min-width: 640px) 28vw, 45vw"
-                      className="object-cover"
-                      {...blurProps(item.src, item.blur)}
-                    />
-                    <span className="absolute left-2 top-2 bg-black/70 px-2 py-0.5 text-[9px] uppercase tracking-[0.2em]">
-                      {item.kind === "photo" ? "Photo" : item.kind === "video" ? "Film" : "Reel"}
-                      {!item.publicId && " · built-in"}
-                    </span>
-                  </div>
-                  <div className="flex flex-1 flex-col gap-2 p-3">
+            {/* folder workspace */}
+            {folder && (
+              <section className="min-w-0">
+                <div className="flex flex-wrap items-end justify-between gap-4 border-b border-line pb-4">
+                  <label className="min-w-0 flex-1">
+                    <span className="text-[10px] uppercase tracking-[0.3em] text-accent">Folder name</span>
                     <input
-                      key={`${item.id}-${item.title}`}
-                      defaultValue={item.title}
-                      maxLength={120}
+                      key={`${folder.id}-${folder.title}`}
+                      defaultValue={folder.title}
+                      maxLength={60}
                       disabled={readOnly}
-                      aria-label="Title"
-                      onBlur={(e) => renameItem(item.id, e.target.value)}
+                      onBlur={(e) => renameFolder(folder.id, e.target.value)}
                       onKeyDown={(e) => e.key === "Enter" && e.currentTarget.blur()}
-                      className={input}
+                      className="w-full border-b border-transparent bg-transparent font-serif text-4xl hover:border-line focus:border-accent focus:outline-none"
                     />
-                    <select
-                      value={item.folder}
-                      disabled={readOnly}
-                      aria-label="Folder"
-                      onChange={(e) => moveItem(item.id, e.target.value)}
-                      className={`${input} [&>option]:bg-surface`}
-                    >
-                      {m.folders.map((f) => (
-                        <option key={f.id} value={f.id}>
-                          {f.title}
-                        </option>
-                      ))}
-                    </select>
-                    <div className="mt-auto flex items-center gap-1 pt-1">
-                      <button className={iconBtn} aria-label="Move earlier" disabled={readOnly || idx === 0} onClick={() => shiftItem(item.id, -1)}>
-                        ←
-                      </button>
-                      <button
-                        className={iconBtn}
-                        aria-label="Move later"
-                        disabled={readOnly || idx === items.length - 1}
-                        onClick={() => shiftItem(item.id, 1)}
-                      >
-                        →
-                      </button>
-                      <button
-                        className={`${iconBtn} ml-auto hover:!border-[#e57373] hover:!text-[#e57373]`}
-                        aria-label={`Delete ${item.title}`}
-                        disabled={readOnly}
-                        onClick={() => deleteItem(item)}
-                      >
-                        ✕
-                      </button>
-                    </div>
-                  </div>
-                </li>
-              ))}
-            </ul>
-            {items.length === 0 && <p className="mt-4 text-sm text-muted">This folder is empty — upload something above.</p>}
-          </section>
-        )}
-      </div>
+                  </label>
+                  <button className={`${btn} hover:!border-[#e57373] hover:!text-[#e57373]`} disabled={readOnly} onClick={() => deleteFolder(folder.id)}>
+                    Delete folder
+                  </button>
+                </div>
+
+                <label
+                  onDragOver={(e) => {
+                    e.preventDefault();
+                    setDragOver(true);
+                  }}
+                  onDragLeave={() => setDragOver(false)}
+                  onDrop={onDrop}
+                  className={`mt-6 flex cursor-pointer flex-col items-center justify-center gap-2 border-2 border-dashed px-6 py-10 text-center transition-colors ${
+                    readOnly ? "pointer-events-none opacity-40" : ""
+                  } ${dragOver ? "border-accent bg-accent/10" : "border-line hover:border-foreground/40"}`}
+                >
+                  <input
+                    type="file"
+                    multiple
+                    accept="image/*,video/*,.heic,.heif"
+                    className="sr-only"
+                    disabled={readOnly}
+                    onChange={(e) => {
+                      onFiles(e.target.files);
+                      e.target.value = "";
+                    }}
+                  />
+                  <span className="font-serif text-2xl">Drop photos & videos here</span>
+                  <span className="text-xs text-muted">
+                    or <span className="text-accent underline underline-offset-4">browse</span> — added to “{folder.title}”. Photos
+                    are resized and stripped of location data; videos up to 100 MB.
+                  </span>
+                </label>
+
+                {jobs.length > 0 && (
+                  <ul className="mt-4 space-y-2">
+                    {jobs.map((j) => (
+                      <li key={j.key} className="border border-line px-4 py-2 text-xs">
+                        <div className="flex items-center justify-between gap-4">
+                          <span className="truncate">{j.name}</span>
+                          <span className={j.state === "error" ? "text-[#e57373]" : j.state === "done" ? "text-[#25D366]" : "text-muted"}>
+                            {j.state === "preparing" ? "Preparing…" : j.state === "uploading" ? `${Math.round(j.progress * 100)}%` : j.state === "done" ? "Added ✓" : "Failed"}
+                          </span>
+                        </div>
+                        {j.state === "uploading" && (
+                          <div className="mt-2 h-0.5 bg-line">
+                            <div className="h-full bg-accent transition-[width]" style={{ width: `${j.progress * 100}%` }} />
+                          </div>
+                        )}
+                        {j.error && <p className="mt-1 text-[#e57373]">{j.error}</p>}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+
+                <p className="mb-3 mt-8 text-[10px] uppercase tracking-[0.3em] text-muted">
+                  {items.length} item{items.length === 1 ? "" : "s"} · the first three photos are the folder&apos;s cover
+                </p>
+                <ul className="grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-4">
+                  {items.map((item, idx) => (
+                    <li key={item.id} className="flex flex-col border border-line bg-surface">
+                      <div className="relative aspect-square overflow-hidden bg-background">
+                        <Image
+                          src={item.src}
+                          alt={item.alt}
+                          fill
+                          sizes="(min-width: 1280px) 18vw, (min-width: 640px) 28vw, 45vw"
+                          className="object-cover"
+                          {...blurProps(item.src, item.blur)}
+                        />
+                        <span className="absolute left-2 top-2 bg-black/70 px-2 py-0.5 text-[9px] uppercase tracking-[0.2em]">
+                          {item.kind === "photo" ? "Photo" : item.kind === "video" ? "Film" : "Reel"}
+                          {!item.publicId && " · built-in"}
+                        </span>
+                      </div>
+                      <div className="flex flex-1 flex-col gap-2 p-3">
+                        <input
+                          key={`${item.id}-${item.title}`}
+                          defaultValue={item.title}
+                          maxLength={120}
+                          disabled={readOnly}
+                          aria-label="Title"
+                          onBlur={(e) => renameItem(item.id, e.target.value)}
+                          onKeyDown={(e) => e.key === "Enter" && e.currentTarget.blur()}
+                          className={input}
+                        />
+                        <select
+                          value={item.folder}
+                          disabled={readOnly}
+                          aria-label="Folder"
+                          onChange={(e) => moveItem(item.id, e.target.value)}
+                          className={`${input} [&>option]:bg-surface`}
+                        >
+                          {m.folders.map((f) => (
+                            <option key={f.id} value={f.id}>
+                              {f.title}
+                            </option>
+                          ))}
+                        </select>
+                        <div className="mt-auto flex items-center gap-1 pt-1">
+                          <button className={iconBtn} aria-label="Move earlier" disabled={readOnly || idx === 0} onClick={() => shiftItem(item.id, -1)}>
+                            ←
+                          </button>
+                          <button
+                            className={iconBtn}
+                            aria-label="Move later"
+                            disabled={readOnly || idx === items.length - 1}
+                            onClick={() => shiftItem(item.id, 1)}
+                          >
+                            →
+                          </button>
+                          <button
+                            className={`${iconBtn} ml-auto hover:!border-[#e57373] hover:!text-[#e57373]`}
+                            aria-label={`Delete ${item.title}`}
+                            disabled={readOnly}
+                            onClick={() => deleteItem(item)}
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+                {items.length === 0 && <p className="mt-4 text-sm text-muted">This folder is empty — upload something above.</p>}
+              </section>
+            )}
+          </div>
+
+        </>
+      )}
 
       {showPassword && <PasswordDialog username={username} onClose={() => setShowPassword(false)} disabled={storage === "none"} />}
     </div>

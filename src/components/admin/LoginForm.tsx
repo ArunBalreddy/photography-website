@@ -20,7 +20,7 @@ export default function LoginForm({ setup }: { setup: "ready" | "unconfigured" |
           <Image src="/brand/logo-camera.png" alt="" fill sizes="80px" />
         </span>
         <p className="font-serif text-3xl font-semibold tracking-[0.2em]">PICTURESQUE</p>
-        <p className="mt-1 text-[10px] uppercase tracking-[0.35em] text-accent">Gallery admin</p>
+        <p className="mt-1 text-[10px] uppercase tracking-[0.35em] text-accent">Studio admin</p>
       </div>
 
       {setup === "unconfigured" ? (

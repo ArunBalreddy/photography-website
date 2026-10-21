@@ -11,7 +11,7 @@ const cormorant = Cormorant_Garamond({
   style: ["normal", "italic"],
 });
 
-const SITE_URL = "https://picturesque-by-nikhil-sonu.vercel.app";
+const SITE_URL = site.url;
 
 // Dark browser chrome on phones; let the bottom action bar sit above the iPhone home indicator.
 export const viewport: Viewport = { themeColor: "#0e0d0c", viewportFit: "cover" };

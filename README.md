@@ -23,7 +23,7 @@ npm install
 npm run dev
 ```
 
-## Gallery admin (`/admin`)
+## Admin (`/admin`)
 
 Sign in at `/admin/login` to manage the gallery: create, rename, reorder and delete folders; upload photos and videos
 (photos are resized and stripped of location data in the browser; videos up to 100 MB); rename, move, reorder and
@@ -38,3 +38,15 @@ Environment variables (Vercel → Settings → Environment Variables):
 
 Locally (`npm run dev`) without `CLOUDINARY_URL`, the admin saves to `.data/` and uploads to `public/uploads/` so it can
 be tried end to end.
+
+## Client reviews
+
+Clients write a review at `/review` (star rating, name, optional shoot type, their words). Each review waits in an
+inbox until it's approved in **Admin → Reviews**. Approved reviews appear right away in the homepage's "Kind words"
+section, with the average rating. In the admin you can approve, hide or show again, reply as Nikhil, or delete a
+review, and copy or WhatsApp the review link to clients after a shoot.
+
+- Storage: the same `CLOUDINARY_URL`. The inbox is one small JSON file per review under `picturesque/reviews/inbox/`,
+  so reviews sent at the same moment never overwrite each other. Published reviews live in `picturesque/reviews.json`.
+- Spam guards: a honeypot field, links rejected, 3 reviews per IP per hour, and nothing goes live without approval.
+- With `CALLMEBOT_APIKEY` set, Nikhil gets a WhatsApp alert for each new review with a link to approve it.
