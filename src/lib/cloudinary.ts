@@ -5,8 +5,18 @@ import { createHash } from "node:crypto";
 export type CloudinaryConfig = { cloud: string; key: string; secret: string };
 
 export function cloudinaryConfig(): CloudinaryConfig | null {
-  const m = process.env.CLOUDINARY_URL?.trim().match(/^cloudinary:\/\/([^:]+):([^@]+)@(.+)$/);
-  return m ? { key: m[1], secret: m[2], cloud: m[3] } : null;
+  // Forgiving about how it was pasted: a leading "CLOUDINARY_URL=", quotes, the <…> from Cloudinary's template, spaces.
+  const value = (process.env.CLOUDINARY_URL ?? "")
+    .trim()
+    .replace(/^CLOUDINARY_URL\s*=\s*/i, "")
+    .replace(/^["']|["']$/g, "")
+    .replace(/[<>\s]/g, "");
+  const m = value.match(/^cloudinary:\/\/([^:]+):([^@]+)@([\w-]+)$/);
+  if (!m || m[1].startsWith("your_")) {
+    if (value) console.error("CLOUDINARY_URL is set but not in the form cloudinary://<api_key>:<api_secret>@<cloud_name>");
+    return null;
+  }
+  return { key: m[1], secret: m[2], cloud: m[3] };
 }
 
 /** Cloudinary request signature: sorted `k=v&…` of the signed params, API secret appended, SHA-1 hex. */
