@@ -74,9 +74,12 @@ export type HeroSlide = {
   position: string;
   /** Shown beside the slide counter, e.g. "Couples". */
   caption: string;
+  /** Tiny blurred preview (uploaded photos carry their own; built-ins come from blur.ts). */
+  blur?: string;
 };
 
 // High-resolution exports of Nikhil's originals (public/hero), shown full-screen with a slow zoom.
+// These are the defaults: the admin can choose other backgrounds from the gallery (src/lib/hero.ts).
 export const heroSlides: HeroSlide[] = [
   { src: "/hero/couple-petals.jpg", alt: "Couple embracing as rose petals fall around them", position: "60% 50%", caption: "Couples" },
   { src: "/hero/wedding-garlands.jpg", alt: "Bride and groom under a marigold mandap", position: "50% 45%", caption: "Weddings" },

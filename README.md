@@ -39,6 +39,13 @@ Environment variables (Vercel → Settings → Environment Variables):
 Locally (`npm run dev`) without `CLOUDINARY_URL`, the admin saves to `.data/` and uploads to `public/uploads/` so it can
 be tried end to end.
 
+### Home background
+
+**Admin → Home background** chooses the photos that play full-screen at the top of the homepage (random order on
+every visit). Pick from any gallery photo or the original backgrounds, tap a photo to set the point that must stay in
+view (previews show the computer and phone crops), edit the caption, reorder or remove. Saved in the gallery data
+(`hero` in `picturesque/gallery.json`); with nothing chosen, the original set in `site.ts` plays.
+
 ## Client reviews
 
 Clients write a review at `/review` (star rating, name, optional shoot type, their words). By default a review is

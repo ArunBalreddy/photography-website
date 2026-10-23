@@ -3,15 +3,14 @@
 import Image from "next/image";
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { blurProps } from "@/content/blur";
-import { heroSlides, site } from "@/content/site";
+import { site, type HeroSlide } from "@/content/site";
 
 const INTERVAL_MS = 6000;
 const delay = (s: number) => ({ "--d": `${s}s` }) as CSSProperties;
 const pad = (n: number) => String(n).padStart(2, "0");
 
-/** Random play order for this visit: opens on the photo the <head> script picked, the rest shuffled. */
-function playOrder(): number[] {
-  const count = heroSlides.length;
+/** Random play order for this visit: opens on the photo the page script picked, the rest shuffled. */
+function playOrder(count: number): number[] {
   const picked = Number(document.documentElement.dataset.heroStart);
   const start = Number.isInteger(picked) && picked >= 0 && picked < count ? picked : Math.floor(Math.random() * count);
   const rest = Array.from({ length: count }, (_, i) => i).filter((i) => i !== start);
@@ -22,7 +21,7 @@ function playOrder(): number[] {
   return [start, ...rest];
 }
 
-export default function Hero() {
+export default function Hero({ slides }: { slides: HeroSlide[] }) {
   // null until the browser has picked this visit's random order (the pre-built HTML can't know it).
   const [order, setOrder] = useState<number[] | null>(null);
   const [step, setStep] = useState(0); // position in `order`
@@ -31,21 +30,21 @@ export default function Hero() {
 
   useEffect(() => {
     const t = setTimeout(() => {
-      setOrder(playOrder());
+      setOrder(playOrder(slides.length));
       document.documentElement.dataset.heroReady = "";
     });
     return () => clearTimeout(t);
-  }, []);
+  }, [slides.length]);
 
   useEffect(() => {
     if (!order) return;
-    const id = setInterval(() => setStep((s) => (s + 1) % heroSlides.length), INTERVAL_MS);
+    const id = setInterval(() => setStep((s) => (s + 1) % slides.length), INTERVAL_MS);
     return () => clearInterval(id);
-  }, [order, cycle]);
+  }, [order, cycle, slides.length]);
 
   const index = order ? order[step] : -1; // the slide on screen (-1: the <head> script's pick is showing)
   const go = (s: number) => {
-    setStep((s + heroSlides.length) % heroSlides.length);
+    setStep((s + slides.length) % slides.length);
     setCycle((c) => c + 1);
   };
 
@@ -68,7 +67,7 @@ export default function Hero() {
         if (order && Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5) go(step + (dx < 0 ? 1 : -1));
       }}
     >
-      {heroSlides.map((slide, i) => (
+      {slides.map((slide, i) => (
         <div
           key={slide.src}
           data-hero-slide={i}
@@ -83,7 +82,7 @@ export default function Hero() {
             loading="eager"
             style={{ objectPosition: slide.position }}
             className={`object-cover ${i === index ? "animate-[kenburns_8s_ease-out_forwards]" : ""}`}
-            {...blurProps(slide.src)}
+            {...blurProps(slide.src, slide.blur)}
           />
         </div>
       ))}
@@ -125,19 +124,19 @@ export default function Hero() {
         <div style={delay(0.7)} className="hero-fade absolute bottom-10 right-6 hidden flex-col items-end gap-4 md:flex">
           <p className="flex items-baseline gap-3 text-[10px] uppercase tracking-[0.3em] text-foreground/80">
             <span className="font-serif text-2xl tracking-normal text-foreground">{pad(step + 1)}</span>
-            <span>/ {pad(heroSlides.length)}</span>
-            {order && (
+            <span>/ {pad(slides.length)}</span>
+            {order && slides[index].caption && (
               <span key={step} className="hero-caption text-accent">
-                — {heroSlides[index].caption}
+                — {slides[index].caption}
               </span>
             )}
           </p>
           <div className="flex gap-3">
-            {(order ?? heroSlides.map((_, i) => i)).map((slideIndex, s) => (
+            {(order ?? slides.map((_, i) => i)).map((slideIndex, s) => (
               <button
-                key={heroSlides[slideIndex].src}
+                key={slides[slideIndex].src}
                 onClick={() => order && go(s)}
-                aria-label={`Show slide ${s + 1}: ${heroSlides[slideIndex].caption}`}
+                aria-label={`Show slide ${s + 1}: ${slides[slideIndex].caption}`}
                 className="group py-2"
               >
                 <span

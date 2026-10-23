@@ -15,9 +15,15 @@ import type { Manifest, StoredItem } from "@/lib/gallery";
 import type { ReviewsAdminData } from "@/lib/review-shared";
 import type { StorageMode } from "@/lib/storage";
 import { MAX_VIDEO_BYTES, cloudinaryPoster, cloudinaryVideo, preparePhoto, prepareVideo, titleFromFilename, uploadFile } from "./media";
+import HeroAdmin from "./HeroAdmin";
 import ReviewsAdmin from "./ReviewsAdmin";
 
-export type AdminTab = "gallery" | "reviews";
+export type AdminTab = "gallery" | "background" | "reviews";
+const TABS: { id: AdminTab; label: string; url: string }[] = [
+  { id: "gallery", label: "Gallery", url: "/admin" },
+  { id: "background", label: "Home background", url: "/admin?tab=background" },
+  { id: "reviews", label: "Reviews", url: "/admin?tab=reviews" },
+];
 
 type Status = { kind: "idle" | "pending" | "saving" | "saved" | "error"; message?: string };
 type Job = { key: string; name: string; progress: number; state: "preparing" | "uploading" | "done" | "error"; error?: string };
@@ -155,6 +161,7 @@ export default function AdminApp({
       ...c,
       folders: c.folders.filter((x) => x.id !== id),
       items: c.items.filter((i) => i.folder !== id || failed.has(i.id)),
+      ...(c.hero ? { hero: c.hero.filter((h) => !inside.some((i) => i.id === h.id && !failed.has(i.id))) } : {}),
     }));
     setActive(cur.folders.find((x) => x.id !== id)!.id);
   };
@@ -200,7 +207,12 @@ export default function AdminApp({
   const deleteItem = async (item: StoredItem) => {
     if (!confirm(`Delete "${item.title}"?${item.publicId ? "\nThe uploaded file is deleted permanently." : ""}`)) return;
     const failed = await deleteFiles([item]);
-    if (!failed.size) mutate((cur) => ({ ...cur, items: cur.items.filter((i) => i.id !== item.id) }));
+    if (!failed.size)
+      mutate((cur) => ({
+        ...cur,
+        items: cur.items.filter((i) => i.id !== item.id),
+        ...(cur.hero ? { hero: cur.hero.filter((h) => h.id !== item.id) } : {}),
+      }));
   };
 
   // ── uploads ──
@@ -334,20 +346,20 @@ export default function AdminApp({
           <p className="mx-auto max-w-7xl px-6 pb-3 text-xs text-[#e57373]">{status.message}</p>
         )}
         <nav className="mx-auto flex max-w-7xl gap-8 px-6" role="tablist" aria-label="Admin sections">
-          {(["gallery", "reviews"] as const).map((t) => (
+          {TABS.map(({ id: t, label, url }) => (
             <button
               key={t}
               role="tab"
               aria-selected={tab === t}
               onClick={() => {
                 setTab(t);
-                history.replaceState(null, "", t === "gallery" ? "/admin" : "/admin?tab=reviews");
+                history.replaceState(null, "", url);
               }}
               className={`-mb-px flex items-center gap-2 border-b-2 pb-3 text-xs uppercase tracking-[0.25em] transition-colors ${
                 tab === t ? "border-accent text-foreground" : "border-transparent text-muted hover:text-foreground"
               }`}
             >
-              {t === "gallery" ? "Gallery" : "Reviews"}
+              {label}
               {t === "reviews" && Boolean(reviews?.pending.length) && (
                 <span className="min-w-5 rounded-full bg-accent px-1.5 py-px text-center text-[10px] font-medium tracking-normal text-background">
                   {reviews!.pending.length}
@@ -360,6 +372,8 @@ export default function AdminApp({
 
       {tab === "reviews" ? (
         <ReviewsAdmin data={reviews} setData={setReviews} loadError={reviewsError} readOnly={storage === "none"} />
+      ) : tab === "background" ? (
+        <HeroAdmin m={m} mutate={mutate} readOnly={readOnly} />
       ) : (
         <>
 

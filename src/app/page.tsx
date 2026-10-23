@@ -19,7 +19,13 @@ export default async function Home() {
       <Intro />
       <Navbar />
       <main>
-        <Hero />
+        {/* Runs as the page is parsed, before the slides paint: picks the random photo to open on. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `try{var n=Math.floor(Math.random()*${gallery.hero.length});document.documentElement.dataset.heroStart=n;document.head.insertAdjacentHTML("beforeend",'<style>html:not([data-hero-ready]) [data-hero-slide="'+n+'"]{opacity:1}</style>')}catch(e){}`,
+          }}
+        />
+        <Hero slides={gallery.hero} />
         <Gallery folders={gallery.folders} works={gallery.works} />
         <About />
         <Services />

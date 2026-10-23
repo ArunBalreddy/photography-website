@@ -23,7 +23,8 @@ export default function AdminPage({ searchParams }: PageProps<"/admin">) {
 
 async function Dashboard({ searchParams }: Pick<PageProps<"/admin">, "searchParams">) {
   if (!(await isAdmin())) redirect("/admin/login");
-  const tab: AdminTab = (await searchParams).tab === "reviews" ? "reviews" : "gallery";
+  const requested = (await searchParams).tab;
+  const tab: AdminTab = requested === "reviews" || requested === "background" ? requested : "gallery";
   let manifest: Manifest;
   let loadError: string | undefined;
   try {

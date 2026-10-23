@@ -1,16 +1,18 @@
 // The public gallery's folders and items, editable from /admin. Until the admin first saves, it's
 // built from the photos/films defined in src/content/site.ts.
 import { cacheLife, cacheTag } from "next/cache";
-import { categories, works as builtInWorks, type Work } from "@/content/site";
+import { categories, works as builtInWorks, type HeroSlide, type Work } from "@/content/site";
 import { cloudinaryConfig } from "./cloudinary";
+import { CENTER, MAX_HERO, POSITION, builtInHero, resolveHero, type HeroPick } from "./hero";
 import { readDoc, writeDoc } from "./storage";
 
 export const GALLERY_TAG = "gallery";
 
 export type GalleryFolder = { id: string; title: string };
 export type StoredItem = Omit<Work, "category" | "folder"> & { folder: string };
-export type Manifest = { version: 1; updatedAt: string; folders: GalleryFolder[]; items: StoredItem[] };
-export type GalleryData = { folders: GalleryFolder[]; works: Work[] };
+/** `hero`: the homepage background photos; absent means the built-in set. */
+export type Manifest = { version: 1; updatedAt: string; folders: GalleryFolder[]; items: StoredItem[]; hero?: HeroPick[] };
+export type GalleryData = { folders: GalleryFolder[]; works: Work[]; hero: HeroSlide[] };
 
 export const slugify = (s: string) =>
   s
@@ -41,6 +43,7 @@ export function toGallery(m: Manifest): GalleryData {
     works: m.items
       .filter((i) => title.has(i.folder))
       .map((i) => ({ ...i, category: title.get(i.folder)!, folder: i.folder })),
+    hero: resolveHero(m.hero, m.items),
   };
 }
 
@@ -101,7 +104,21 @@ export function validateManifest(input: unknown): Manifest {
     };
   });
 
-  return { version: 1, updatedAt: new Date().toISOString(), folders, items };
+  // Background picks pointing at photos that no longer exist are dropped rather than rejected.
+  let hero: HeroPick[] | undefined;
+  if (m.hero !== undefined && m.hero !== null) {
+    if (!Array.isArray(m.hero) || m.hero.length > MAX_HERO) throw new Error(`Choose up to ${MAX_HERO} background photos.`);
+    const known = new Set([...builtInHero.map((h) => h.id), ...items.filter((i) => i.kind === "photo").map((i) => i.id)]);
+    hero = [];
+    for (const p of m.hero as Partial<HeroPick>[]) {
+      const id = str(p?.id, 160);
+      if (!id || !known.has(id) || hero.some((h) => h.id === id)) continue;
+      const position = typeof p.position === "string" && POSITION.test(p.position) ? p.position : CENTER;
+      hero.push({ id, position, caption: str(p.caption, 40, 0) ?? "" });
+    }
+  }
+
+  return { version: 1, updatedAt: new Date().toISOString(), folders, items, ...(hero?.length ? { hero } : {}) };
 }
 
 // ── reading & writing ──
