@@ -9,18 +9,43 @@ const INTERVAL_MS = 6000;
 const delay = (s: number) => ({ "--d": `${s}s` }) as CSSProperties;
 const pad = (n: number) => String(n).padStart(2, "0");
 
+/** Random play order for this visit: opens on the photo the <head> script picked, the rest shuffled. */
+function playOrder(): number[] {
+  const count = heroSlides.length;
+  const picked = Number(document.documentElement.dataset.heroStart);
+  const start = Number.isInteger(picked) && picked >= 0 && picked < count ? picked : Math.floor(Math.random() * count);
+  const rest = Array.from({ length: count }, (_, i) => i).filter((i) => i !== start);
+  for (let i = rest.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [rest[i], rest[j]] = [rest[j], rest[i]];
+  }
+  return [start, ...rest];
+}
+
 export default function Hero() {
-  const [index, setIndex] = useState(0);
+  // null until the browser has picked this visit's random order (the pre-built HTML can't know it).
+  const [order, setOrder] = useState<number[] | null>(null);
+  const [step, setStep] = useState(0); // position in `order`
   const [cycle, setCycle] = useState(0); // bumps on manual navigation to restart the autoplay timer
   const touch = useRef<{ x: number; y: number } | null>(null);
 
   useEffect(() => {
-    const id = setInterval(() => setIndex((i) => (i + 1) % heroSlides.length), INTERVAL_MS);
-    return () => clearInterval(id);
-  }, [cycle]);
+    const t = setTimeout(() => {
+      setOrder(playOrder());
+      document.documentElement.dataset.heroReady = "";
+    });
+    return () => clearTimeout(t);
+  }, []);
 
-  const go = (i: number) => {
-    setIndex((i + heroSlides.length) % heroSlides.length);
+  useEffect(() => {
+    if (!order) return;
+    const id = setInterval(() => setStep((s) => (s + 1) % heroSlides.length), INTERVAL_MS);
+    return () => clearInterval(id);
+  }, [order, cycle]);
+
+  const index = order ? order[step] : -1; // the slide on screen (-1: the <head> script's pick is showing)
+  const go = (s: number) => {
+    setStep((s + heroSlides.length) % heroSlides.length);
     setCycle((c) => c + 1);
   };
 
@@ -40,12 +65,13 @@ export default function Hero() {
         if (!start) return;
         const dx = e.changedTouches[0].clientX - start.x;
         const dy = e.changedTouches[0].clientY - start.y;
-        if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5) go(index + (dx < 0 ? 1 : -1));
+        if (order && Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5) go(step + (dx < 0 ? 1 : -1));
       }}
     >
       {heroSlides.map((slide, i) => (
         <div
           key={slide.src}
+          data-hero-slide={i}
           className={`absolute inset-0 transition-opacity duration-[1500ms] ${i === index ? "opacity-100" : "opacity-0"}`}
           aria-hidden={i !== index}
         >
@@ -54,7 +80,7 @@ export default function Hero() {
             alt={slide.alt}
             fill
             sizes="100vw"
-            preload={i === 0}
+            loading="eager"
             style={{ objectPosition: slide.position }}
             className={`object-cover ${i === index ? "animate-[kenburns_8s_ease-out_forwards]" : ""}`}
             {...blurProps(slide.src)}
@@ -98,23 +124,25 @@ export default function Hero() {
         {/* Slide counter + caption, and the slide dots */}
         <div style={delay(0.7)} className="hero-fade absolute bottom-10 right-6 hidden flex-col items-end gap-4 md:flex">
           <p className="flex items-baseline gap-3 text-[10px] uppercase tracking-[0.3em] text-foreground/80">
-            <span className="font-serif text-2xl tracking-normal text-foreground">{pad(index + 1)}</span>
+            <span className="font-serif text-2xl tracking-normal text-foreground">{pad(step + 1)}</span>
             <span>/ {pad(heroSlides.length)}</span>
-            <span key={index} className="hero-caption text-accent">
-              — {heroSlides[index].caption}
-            </span>
+            {order && (
+              <span key={step} className="hero-caption text-accent">
+                — {heroSlides[index].caption}
+              </span>
+            )}
           </p>
           <div className="flex gap-3">
-            {heroSlides.map((s, i) => (
+            {(order ?? heroSlides.map((_, i) => i)).map((slideIndex, s) => (
               <button
-                key={s.src}
-                onClick={() => go(i)}
-                aria-label={`Show slide ${i + 1}: ${s.caption}`}
+                key={heroSlides[slideIndex].src}
+                onClick={() => order && go(s)}
+                aria-label={`Show slide ${s + 1}: ${heroSlides[slideIndex].caption}`}
                 className="group py-2"
               >
                 <span
                   className={`block h-px w-12 transition-colors ${
-                    i === index ? "bg-accent" : "bg-foreground/30 group-hover:bg-foreground/70"
+                    s === step ? "bg-accent" : "bg-foreground/30 group-hover:bg-foreground/70"
                   }`}
                 />
               </button>

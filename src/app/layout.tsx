@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Cormorant_Garamond, Inter } from "next/font/google";
-import { site } from "@/content/site";
+import { heroSlides, site } from "@/content/site";
 import "./globals.css";
 
 const inter = Inter({ variable: "--font-inter", subsets: ["latin"] });
@@ -60,6 +60,15 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             __html: `try{if(sessionStorage.getItem("intro-seen")||location.hash.indexOf("#photo=")===0)document.documentElement.dataset.intro="seen"}catch(e){}`,
           }}
         />
+        {/* Before first paint: pick a random hero photo to open on, so the pre-built page never flashes a fixed first slide. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `try{var n=Math.floor(Math.random()*${heroSlides.length});document.documentElement.dataset.heroStart=n;document.head.insertAdjacentHTML("beforeend",'<style>html:not([data-hero-ready]) [data-hero-slide="'+n+'"]{opacity:1}</style>')}catch(e){}`,
+          }}
+        />
+        <noscript>
+          <style>{`[data-hero-slide="0"]{opacity:1}`}</style>
+        </noscript>
       </head>
       <body className="min-h-full flex flex-col">
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }} />
