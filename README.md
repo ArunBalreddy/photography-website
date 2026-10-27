@@ -46,6 +46,14 @@ every visit). Pick from any gallery photo or the original backgrounds, tap a pho
 view (previews show the computer and phone crops), edit the caption, reorder or remove. Saved in the gallery data
 (`hero` in `picturesque/gallery.json`); with nothing chosen, the original set in `site.ts` plays.
 
+### Services & pricing
+
+**Admin → Services & pricing** edits the homepage's pricing cards: add, edit, reorder, hide or delete services; set the
+name, price (free text, e.g. "₹25,000" or "On request"), the words before it ("per session", "starting from"), what's
+included, an optional highlight label ("Most booked"), the photo (any gallery photo), and which shoot type "Book this"
+preselects. A live preview shows the card as it will look. Saved as `services` in `picturesque/gallery.json`; with
+nothing saved, the list in `site.ts` is shown.
+
 ## Client reviews
 
 Clients write a review at `/review` (star rating, name, optional shoot type, their words). By default a review is

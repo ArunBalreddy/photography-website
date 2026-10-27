@@ -16,12 +16,14 @@ import type { ReviewsAdminData } from "@/lib/review-shared";
 import type { StorageMode } from "@/lib/storage";
 import { MAX_VIDEO_BYTES, cloudinaryPoster, cloudinaryVideo, preparePhoto, prepareVideo, titleFromFilename, uploadFile } from "./media";
 import HeroAdmin from "./HeroAdmin";
+import ServicesAdmin from "./ServicesAdmin";
 import ReviewsAdmin from "./ReviewsAdmin";
 
-export type AdminTab = "gallery" | "background" | "reviews";
+export type AdminTab = "gallery" | "background" | "services" | "reviews";
 const TABS: { id: AdminTab; label: string; url: string }[] = [
   { id: "gallery", label: "Gallery", url: "/admin" },
   { id: "background", label: "Home background", url: "/admin?tab=background" },
+  { id: "services", label: "Services & pricing", url: "/admin?tab=services" },
   { id: "reviews", label: "Reviews", url: "/admin?tab=reviews" },
 ];
 
@@ -34,6 +36,12 @@ const slugify = (s: string) =>
 // Unique ids for new folders and upload rows (module-level so render stays pure).
 let seq = 0;
 const uniqueSuffix = () => `${Date.now().toString(36).slice(-4)}${(seq++).toString(36)}`;
+
+/** Service cards whose photo is being deleted lose the photo (the card itself stays). */
+function withoutServicePhotos(m: Manifest, deleted: Set<string>) {
+  if (!m.services) return {};
+  return { services: m.services.map(({ imageId, ...s }) => (imageId && !deleted.has(imageId) ? { ...s, imageId } : s)) };
+}
 
 /** New uploads go to the top of their folder. */
 function insertAtFolderTop(items: StoredItem[], item: StoredItem) {
@@ -162,6 +170,7 @@ export default function AdminApp({
       folders: c.folders.filter((x) => x.id !== id),
       items: c.items.filter((i) => i.folder !== id || failed.has(i.id)),
       ...(c.hero ? { hero: c.hero.filter((h) => !inside.some((i) => i.id === h.id && !failed.has(i.id))) } : {}),
+      ...withoutServicePhotos(c, new Set(inside.filter((i) => !failed.has(i.id)).map((i) => i.id))),
     }));
     setActive(cur.folders.find((x) => x.id !== id)!.id);
   };
@@ -212,6 +221,7 @@ export default function AdminApp({
         ...cur,
         items: cur.items.filter((i) => i.id !== item.id),
         ...(cur.hero ? { hero: cur.hero.filter((h) => h.id !== item.id) } : {}),
+        ...withoutServicePhotos(cur, new Set([item.id])),
       }));
   };
 
@@ -345,7 +355,7 @@ export default function AdminApp({
         {status.kind === "error" && status.message && (
           <p className="mx-auto max-w-7xl px-6 pb-3 text-xs text-[#e57373]">{status.message}</p>
         )}
-        <nav className="mx-auto flex max-w-7xl gap-8 px-6" role="tablist" aria-label="Admin sections">
+        <nav className="mx-auto flex max-w-7xl gap-8 overflow-x-auto overflow-y-hidden whitespace-nowrap px-6 [scrollbar-width:none]" role="tablist" aria-label="Admin sections">
           {TABS.map(({ id: t, label, url }) => (
             <button
               key={t}
@@ -374,6 +384,8 @@ export default function AdminApp({
         <ReviewsAdmin data={reviews} setData={setReviews} loadError={reviewsError} readOnly={storage === "none"} />
       ) : tab === "background" ? (
         <HeroAdmin m={m} mutate={mutate} readOnly={readOnly} />
+      ) : tab === "services" ? (
+        <ServicesAdmin m={m} mutate={mutate} readOnly={readOnly} />
       ) : (
         <>
 

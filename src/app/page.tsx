@@ -28,7 +28,7 @@ export default async function Home() {
         <Hero slides={gallery.hero} />
         <Gallery folders={gallery.folders} works={gallery.works} />
         <About />
-        <Services />
+        <Services services={gallery.services} />
         <Reviews />
         <Contact />
       </main>

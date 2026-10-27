@@ -4,15 +4,23 @@ import { cacheLife, cacheTag } from "next/cache";
 import { categories, works as builtInWorks, type HeroSlide, type Work } from "@/content/site";
 import { cloudinaryConfig } from "./cloudinary";
 import { CENTER, MAX_HERO, POSITION, builtInHero, resolveHero, type HeroPick } from "./hero";
+import { resolveServices, validateServices, type ServiceCardData, type ServiceDef } from "./services";
 import { readDoc, writeDoc } from "./storage";
 
 export const GALLERY_TAG = "gallery";
 
 export type GalleryFolder = { id: string; title: string };
 export type StoredItem = Omit<Work, "category" | "folder"> & { folder: string };
-/** `hero`: the homepage background photos; absent means the built-in set. */
-export type Manifest = { version: 1; updatedAt: string; folders: GalleryFolder[]; items: StoredItem[]; hero?: HeroPick[] };
-export type GalleryData = { folders: GalleryFolder[]; works: Work[]; hero: HeroSlide[] };
+/** `hero`: the homepage background photos; `services`: the pricing cards. Absent means the built-in ones. */
+export type Manifest = {
+  version: 1;
+  updatedAt: string;
+  folders: GalleryFolder[];
+  items: StoredItem[];
+  hero?: HeroPick[];
+  services?: ServiceDef[];
+};
+export type GalleryData = { folders: GalleryFolder[]; works: Work[]; hero: HeroSlide[]; services: ServiceCardData[] };
 
 export const slugify = (s: string) =>
   s
@@ -44,6 +52,7 @@ export function toGallery(m: Manifest): GalleryData {
       .filter((i) => title.has(i.folder))
       .map((i) => ({ ...i, category: title.get(i.folder)!, folder: i.folder })),
     hero: resolveHero(m.hero, m.items),
+    services: resolveServices(m.services, m.items),
   };
 }
 
@@ -118,7 +127,19 @@ export function validateManifest(input: unknown): Manifest {
     }
   }
 
-  return { version: 1, updatedAt: new Date().toISOString(), folders, items, ...(hero?.length ? { hero } : {}) };
+  const services =
+    m.services === undefined || m.services === null
+      ? undefined
+      : validateServices(m.services, new Set(items.filter((i) => i.kind === "photo").map((i) => i.id)));
+
+  return {
+    version: 1,
+    updatedAt: new Date().toISOString(),
+    folders,
+    items,
+    ...(hero?.length ? { hero } : {}),
+    ...(services ? { services } : {}),
+  };
 }
 
 // ── reading & writing ──
